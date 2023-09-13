@@ -26,13 +26,6 @@
         .quiz-time {
             font-size: 0.7em;
         }
-        /* #times-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 2px;
-            padding: 10px;
-            margin-left: 20px;
-        } */
     </style>
 </head>
 <body>
@@ -90,6 +83,14 @@
         let startTime = null;
         let buttons = [];
         let times = [];
+
+        let waitingForAnswer = false;
+        document.addEventListener('keydown', function(event) {
+            if (waitingForAnswer) {
+                checkAnswer(randomString, randomFret, event.key.toUpperCase());
+            }
+        });
+        
 
         // Populate the form select dropdown
         for (let i = 0; i < guitarForms.length; i++) {
@@ -152,13 +153,17 @@
             }
 
             startTime = Date.now();
+            waitingForAnswer = true;
         }
 
-        function checkAnswer(string, fret) {
-            if (randomString === null || randomFret === null) {
+        function checkAnswer(string, fret, answer) {
+            if (!waitingForAnswer) {
                 alert('Please start the quiz first');
-            } else if (string === randomString && fret === randomFret) {
-                const userAnswer = prompt("What's the note?");
+                return;
+            }
+            
+            if (string === randomString && fret === randomFret) {
+                const userAnswer = answer;
                 if (userAnswer === guitarForm[string][fret]) {
                     buttons[string][fret].innerText = guitarForm[string][fret] !== "" ? "_" : " ";
                     const endTime = Date.now();
@@ -166,6 +171,8 @@
                     times[string][fret].total += timeTaken;
                     times[string][fret].count++;
                     times[string][fret].cell.innerText = (times[string][fret].total / times[string][fret].count / 1000).toFixed(2) + 's';
+
+                    waitingForAnswer = false;
                     startQuiz();
                 } else {
                     alert('Wrong answer. Try again.');
