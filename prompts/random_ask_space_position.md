@@ -1,3 +1,13 @@
+You are an expert on software engineering and programming.
+Now I need you to guide me to modify code I have (provided below, written in Javascript/CSS/Html).
+
+The requirements are simple:
+1. 
+2. 
+
+Please generate the code I can run directly without my additional modification.
+
+"""
 <!DOCTYPE html>
 <html>
 <head>
@@ -107,8 +117,6 @@
         
         let randomString = null;
         let randomFret = null;
-        let prevRandomString = null;
-        let prevRandomFret = null;
         let startTime = null;
         let buttons = [];
         let times = [];
@@ -116,7 +124,7 @@
         let waitingForAnswer = false;
         document.addEventListener('keydown', function(event) {
             if (waitingForAnswer) {
-                checkAnswer(randomString, randomFret, event.key === ' ' ? ' ' : event.key.toUpperCase());
+                checkAnswer(randomString, randomFret, event.key.toUpperCase());
             }
         });
         
@@ -171,45 +179,17 @@
           }
         }
 
-        function highlight_button(curButton, color, prevButton=null) {
-            if (prevButton !== null) {
-                restore_button_color(prevButton);
-            }
-            curButton.innerText = "?";
-            curButton.style.backgroundColor = "orange";
-        }
-
-        function restore_button_color(curButton) {
-            curButton.innerText = "";
-            curButton.style.backgroundColor = "buttonface";
-        }
-
         function startQuiz() {
-            prevRandomString = randomString;
-            prevRandomFret = randomFret;
-
             while (true) {
                 randomString = Math.floor(Math.random() * 6);
                 randomFret = Math.floor(Math.random() * 5);
 
-                if (prevRandomString === randomString && prevRandomFret === randomFret) {
-                    continue;
+                if (guitarForm[randomString][randomFret] !== "") {
+                    buttons[randomString][randomFret].innerText = "?";
+                    // buttons[randomString][randomFret].style.color = "white";
+                    buttons[randomString][randomFret].style.backgroundColor = "orange";
+                    break;
                 }
-                
-                // Add a small probability of selecting a " " position
-                if (guitarForm[randomString][randomFret] === " ") {
-                    if (Math.random() < 0.8) {
-                        continue;
-                    }
-                }
-
-                try {
-                    highlight_button(buttons[randomString][randomFret], "orange", buttons[prevRandomString][prevRandomFret]);
-                } catch (error) {
-                    highlight_button(buttons[randomString][randomFret], "orange");
-                }
-                break;
-
             }
 
             startTime = Date.now();
@@ -225,9 +205,8 @@
             if (string === randomString && fret === randomFret) {
                 const userAnswer = answer;
                 if (userAnswer === guitarForm[string][fret]) {
-                    restore_button_color(buttons[string][fret]);
-                    // buttons[string][fret].innerText = "";
-                    // buttons[randomString][randomFret].style.backgroundColor = "buttonface";
+                    buttons[string][fret].innerText = "";
+                    buttons[randomString][randomFret].style.backgroundColor = "buttonface";
                     const endTime = Date.now();
                     const timeTaken = endTime - startTime;
                     times[string][fret].total += timeTaken;
@@ -237,8 +216,7 @@
                     waitingForAnswer = false;
                     startQuiz();
                 } else {
-                    alert('Wrong answer. Try again. (Time Penalty: 1s)');
-                    startTime -= 1000;
+                    alert('Wrong answer. Try again.');
                 }
             } else {
                 alert('Please answer the highlighted position');
@@ -257,3 +235,4 @@
     </script>
 </body>
 </html>
+"""
