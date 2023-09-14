@@ -39,7 +39,7 @@
     <script>
         // Define the guitar forms
         const guitarForms = [
-            [
+            [                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
                 ["1", "", "2", "", "3"],
                 ["", "", "6", "", "7"],
                 ["", "3", "4", "", "5"],
@@ -54,7 +54,12 @@
                 ["2", "", "3", "4", ""],
                 ["6", "", "7", "1", ""]
             ],[
-
+                ["5", "", "6", "", "7"],
+                ["", "", "3", "4", ""],
+                ["", "7", "1", "", "2"],
+                ["4", "", "5", "", "6"],
+                ["1", "", "2", "", "3"],
+                ["5", "", "6", "", "7"]
             ],[
                 
             ],[
@@ -123,7 +128,8 @@
                   cell.className = 'quiz-cell';
                   const btn = document.createElement('button');
                   btn.className = 'quiz-button';
-                  btn.innerText = guitarForm[i][j] !== "" ? "_" : " ";
+                  btn.innerText = " ";
+                  btn.style.backgroundColor = "buttonface";
                   btn.onclick = () => checkAnswer(i, j);
                   cell.appendChild(btn);
                   row.push(btn);
@@ -148,6 +154,8 @@
 
                 if (guitarForm[randomString][randomFret] !== "") {
                     buttons[randomString][randomFret].innerText = "?";
+                    // buttons[randomString][randomFret].style.color = "white";
+                    buttons[randomString][randomFret].style.backgroundColor = "orange";
                     break;
                 }
             }
@@ -165,7 +173,8 @@
             if (string === randomString && fret === randomFret) {
                 const userAnswer = answer;
                 if (userAnswer === guitarForm[string][fret]) {
-                    buttons[string][fret].innerText = guitarForm[string][fret] !== "" ? "_" : " ";
+                    buttons[string][fret].innerText = " ";
+                    buttons[randomString][randomFret].style.backgroundColor = "buttonface";
                     const endTime = Date.now();
                     const timeTaken = endTime - startTime;
                     times[string][fret].total += timeTaken;
