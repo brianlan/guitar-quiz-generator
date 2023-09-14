@@ -41,12 +41,12 @@
         const guitarFormNames = ["E", "F", "G", "A", "B", "C", "D"]
         const guitarForms = [
             [
-                ["3", "4", " ", "5", " "],
-                ["7", "1", " ", "2", " "],
-                ["5", " ", "6", " ", " "],
-                ["2", " ", "3", "4", " "],
-                ["6", " ", "7", "1", " "],
-                ["3", "4", " ", "5", " "]
+                ["3", "4", " ", "5"], // " "],
+                ["7", "1", " ", "2"], // " "],
+                ["5", " ", "6", " "], // " "],
+                ["2", " ", "3", "4"], // " "],
+                ["6", " ", "7", "1"], // " "],
+                ["3", "4", " ", "5"], // " "]
             ],
             [
                 ["4", " ", "5", " ", "6"],
@@ -73,12 +73,12 @@
                 ["6", " ", "7", "1", " "]
             ],
             [
-                ["7", " ", "1", "2", " "],
-                [" ", "5", " ", "6", " "],
-                ["2", " ", "3", "4", " "],
-                ["6", " ", "7", "1", " "],
-                ["3", "4", " ", "5", " "],
-                ["7", "1", " ", "2", " "]
+                ["7", "1", " ", "2"], // " "],
+                [" ", "5", " ", "6"], // " "],
+                ["2", " ", "3", "4"], // " "],
+                ["6", " ", "7", "1"], // " "],
+                ["3", "4", " ", "5"], // " "],
+                ["7", "1", " ", "2"], // " "]
             ],
             [
                 ["1", " ", "2", " ", "3"],
@@ -144,10 +144,13 @@
           // Load the selected form
           guitarForm = guitarForms[formSelect.value];
 
-          for (let i = 0; i < 6; i++) {
+          let numberOfColumns = guitarForm[0].length;
+          document.getElementById('quiz-grid').style.gridTemplateColumns = `repeat(${numberOfColumns}, 1fr)`;
+
+          for (let i = 0; i < guitarForm.length; i++) {
               const row = [];
               const timesRow = [];
-              for (let j = 0; j < 5; j++) {
+              for (let j = 0; j < guitarForm[0].length; j++) {
                   const cell = document.createElement('div');
                   cell.className = 'quiz-cell';
                   const btn = document.createElement('button');
@@ -189,8 +192,8 @@
             prevRandomFret = randomFret;
 
             while (true) {
-                randomString = Math.floor(Math.random() * 6);
-                randomFret = Math.floor(Math.random() * 5);
+                randomString = Math.floor(Math.random() * guitarForm.length);
+                randomFret = Math.floor(Math.random() * guitarForm[0].length);
 
                 if (prevRandomString === randomString && prevRandomFret === randomFret) {
                     continue;
@@ -203,11 +206,7 @@
                     }
                 }
 
-                try {
-                    highlight_button(buttons[randomString][randomFret], "orange", buttons[prevRandomString][prevRandomFret]);
-                } catch (error) {
-                    highlight_button(buttons[randomString][randomFret], "orange");
-                }
+                highlight_button(buttons[randomString][randomFret], "orange");
                 break;
 
             }
@@ -226,8 +225,6 @@
                 const userAnswer = answer;
                 if (userAnswer === guitarForm[string][fret]) {
                     restore_button_color(buttons[string][fret]);
-                    // buttons[string][fret].innerText = "";
-                    // buttons[randomString][randomFret].style.backgroundColor = "buttonface";
                     const endTime = Date.now();
                     const timeTaken = endTime - startTime;
                     times[string][fret].total += timeTaken;

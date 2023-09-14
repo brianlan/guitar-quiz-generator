@@ -2,8 +2,9 @@ You are an expert on software engineering and programming.
 Now I need you to guide me to modify code I have (provided below, written in Javascript/CSS/Html).
 
 The requirements are simple:
-1. 
-2. 
+1. modify function `startQuiz` to ask the user the position with " " as well but with small probability
+2. modify function `checkAnswer` accordingly: it considered correct if user typed on the space button.
+3. any other places you think also need to be modified as well.
 
 Please generate the code I can run directly without my additional modification.
 
