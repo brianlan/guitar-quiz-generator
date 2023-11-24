@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Guitar Arpeggio Practice Tool</title>
+    <style>
+        table, th, td {
+          border: 1px solid black;
+          border-collapse: collapse;
+        }
+        button {
+          width: 50px;
+          height: 50px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Guitar Arpeggio Practice Tool</h1>
+    <table id="grid"></table>
+    <button onclick="startNewRound()">Start New Round</button>
+    <script>
+        const chordNotes = {
+            'major 7': ['1', '3', '5', '7', '1'],
+            'minor 7': ['1', 'b3', '5', 'b7', '1'],
+            'dominant 7': ['1', '3', '5', 'b7', '1'],
+            'half diminished 7': ['1', 'b3', 'b5', 'b7', '1'],
+        };
+
+        const arpeggios = {
+            'major 7': [
+                [[5, 0], [5, 4], [4, 2], [3, 1], [3, 2]], // R6F1
+                [[5, 2], [4, 1], [4, 4], [3, 3], [3, 4]], // R6F2
+                [[5, 3], [4, 2], [3, 0], [3, 4], [2, 0]], // R6F4
+                [[4, 0], [4, 4], [3, 2], [2, 1], [2, 2]], // R5F1
+                [[4, 2], [3, 1], [3, 4], [2, 3], [2, 4]], // R5F2
+                [[4, 3], [3, 2], [2, 0], [2, 4], [1, 1]], // R5F4
+                [[3, 0], [3, 4], [2, 2], [1, 2], [1, 3]], // R4F1
+                [[3, 2], [2, 1], [2, 4], [1, 4], [0, 0]], // R4F2
+                [[3, 3], [2, 2], [1, 1], [0, 0], [0, 1]], // R4F4
+                [[2, 0], [1, 0], [1, 3], [0, 2], [0, 3]], // R3F1
+                [[2, 2], [1, 2], [0, 0], [0, 4], [0, 5]], // R3F2 or R3F3
+                [[1, 0], [1, 4], [0, 2],  null ,  null ], // R2F1
+                [[1, 2], [0, 1], [0, 4],  null ,  null ], // R2F2 or R2F3
+                [ null , [5, 2], [4, 0], [4, 4], [3, 0]], // R4F1 (down only)
+                [ null , [5, 0], [5, 3], [4, 2], [4, 3]], // R5F4 or R5F3 (down only)
+                [ null ,  null , [5, 0], [5, 4], [4, 0]], // R5F1 (down only)
+            ],
+        };
+
+        const notesOrder = ['1', 'b2', '2', 'b3', '3', '4', 'b5', '5', 'b6', '6', 'b7', '7'];
+
+        let grid = [...Array(6)].map(() => Array(6).fill(''));
+        let currentQuiz = [];
+        let quizIndex = 0;
+
+        const table = document.getElementById('grid');
+        for (let i = 0; i < 6; i++) {
+            const row = table.insertRow();
+            for (let j = 0; j < 6; j++) {
+                const cell = row.insertCell();
+                const button = document.createElement('button');
+                button.id = `cell-${i}-${j}`;
+                button.addEventListener('click', () => handleButtonClick(i, j));
+                cell.appendChild(button);
+            }
+        }
+
+        function getDistance(note1, note2) {
+            let index1 = notesOrder.indexOf(note1);
+            let index2 = notesOrder.indexOf(note2);
+            let distance = index2 - index1;
+            if (distance < 0) {
+                distance += notesOrder.length;
+            }
+            return distance;
+        }
+
+        function generateQuiz(chord, rootNote) {
+            let quiz = [{row: rootNote.row, col: rootNote.col, note: '1'}];
+            for (let i = 1; i < chord.length; i++) {
+                let previousNote = quiz[i - 1];
+                let distance = getDistance(chord[i - 1], chord[i]);
+                let newRow = previousNote.row;
+                let newCol = previousNote.col + distance;
+                while (newCol >= 6) {
+                    newRow--;
+                    if (newRow === 1 || newRow === 0) {
+                        newCol -= 2;
+                    } else {
+                        newCol -= 2.5;
+                    }
+                }
+                quiz.push({row: newRow, col: Math.round(newCol), note: chord[i]});
+            }
+            return quiz;
+        }
+
+        function handleButtonClick(i, j) {
+            if (i === currentQuiz[quizIndex].row && j === currentQuiz[quizIndex].col) {
+                document.getElementById(`cell-${i}-${j}`).innerHTML = currentQuiz[quizIndex].note;
+                quizIndex++;
+                if (quizIndex === currentQuiz.length) {
+                    alert('Congratulations! You played the chord correctly.');
+                    startNewRound();
+                }
+            } else {
+                alert('Wrong note. Try again.');
+            }
+        }
+
+        function startNewRound() {
+            // Clear the grid
+            for (let i = 0; i < 6; i++) {
+                for (let j = 0; j < 6; j++) {
+                    document.getElementById(`cell-${i}-${j}`).innerHTML = '';
+                }
+            }
+
+            // Select a random chord type
+            const chordKeys = Object.keys(chordTypes);
+            const randomChordKey = chordKeys[Math.floor(Math.random() * chordKeys.length)];
+            let chord = chordTypes[randomChordKey];
+
+            // Select a random direction
+            let direction = Math.random() < 0.5 ? 'up' : 'down';
+            if (direction === 'down') {
+                chord = chord.reverse();
+            }
+
+           // Select a random root note
+            const rootNoteRow = Math.floor(Math.random() * 6);
+            const rootNoteColumn = Math.floor(Math.random() * 6);
+            let rootNote = { row: rootNoteRow, col: rootNoteColumn };
+
+            currentQuiz = generateQuiz(chord, rootNote);
+            quizIndex = 0;
+            document.getElementById(`cell-${rootNoteRow}-${rootNoteColumn}`).innerHTML = '1';
+
+            console.log(`New round: chord = ${randomChordKey}, direction = ${direction}, root note = (${rootNoteRow}, ${rootNoteColumn})`);
+        }
+    </script>
+</body>
+</html>
