@@ -15,6 +15,7 @@
 </head>
 <body>
     <h1>Guitar Arpeggio Practice Tool</h1>
+    <p id="quiz-info"></p>
     <table id="grid"></table>
     <button onclick="startNewRound()">Start New Round</button>
     <script>
@@ -101,7 +102,8 @@
                 button.innerText = currentNote.note;
                 quizIndex += 1;
                 if (quizIndex >= currentQuiz.length) {
-                    alert('Completed! Start a new round.');
+                    // alert('Completed! Start a new round.');
+                    startNewRound();
                 }
             } else {
                 alert('Incorrect! Try again.');
@@ -120,6 +122,7 @@
             // Randomly select a chordNotes and an arpeggio
             const chordKeys = Object.keys(chordNotes);
             const selectedChord = chordKeys[Math.floor(Math.random() * chordKeys.length)];
+            const selectedChordNotes = [...chordNotes[selectedChord]]; 
             const selectedArpeggios = arpeggios[selectedChord];
             const selectedArpeggio = selectedArpeggios[Math.floor(Math.random() * selectedArpeggios.length)];
 
@@ -129,19 +132,25 @@
             // if downward, reverse the order
             if (!isUpward) {
                 selectedArpeggio.reverse();
+                selectedChordNotes.reverse();
             }
 
             // if there's null in the arpeggio, we mustn't make null the starting note.
             while (selectedArpeggio[0] === null) {
                 selectedArpeggio.push(selectedArpeggio.shift());
+                selectedChordNotes.push(selectedChordNotes.shift());
             }
 
             // Generate quiz
-            currentQuiz = generateQuiz(chordNotes[selectedChord], selectedArpeggio);
+            currentQuiz = generateQuiz(selectedChordNotes, selectedArpeggio);
             quizIndex = 0;
 
             // Show the first note of the quiz on the button grid
             handleButtonClick(currentQuiz[0].position[0], currentQuiz[0].position[1]);
+
+            // Show quiz info
+            const direction = isUpward ? 'Upward' : 'Downward';
+            document.getElementById('quiz-info').innerText = `Chord: ${selectedChord}, Direction: ${direction}`;
         }
     </script>
 </body>
