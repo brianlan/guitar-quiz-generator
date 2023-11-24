@@ -20,14 +20,21 @@
     <button onclick="startNewRound()">Start New Round</button>
     <script>
         const chordNotes = {
-            'major 7': ['1', '3', '5', '7', '1'],
-            'minor 7': ['1', 'b3', '5', 'b7', '1'],
-            'dominant 7': ['1', '3', '5', 'b7', '1'],
-            'half diminished 7': ['1', 'b3', 'b5', 'b7', '1'],
+            'Major 7': ['1', '3', '5', '7', '1'],
+            'Minor 7': ['1', 'b3', '5', 'b7', '1'],
+            // 'Dominant 7': ['1', '3', '5', 'b7', '1'],
+            // 'Half Diminished 7': ['1', 'b3', 'b5', 'b7', '1'],
         };
 
+        const abbr = {
+            'Major 7': 'M7',
+            'Minor 7': 'm7',
+            // 'Dominant 7': '7',
+            // 'Half Diminished 7': 'm7b5',
+        }
+
         const arpeggios = {
-            'major 7': [
+            'Major 7': [
                 [[5, 0], [5, 4], [4, 2], [3, 1], [3, 2]], // R6F1
                 [[5, 2], [4, 1], [4, 4], [3, 3], [3, 4]], // R6F2
                 [[5, 3], [4, 2], [3, 0], [3, 4], [2, 0]], // R6F4
@@ -39,34 +46,44 @@
                 [[3, 3], [2, 2], [1, 1], [0, 0], [0, 1]], // R4F4
                 [[2, 0], [1, 0], [1, 3], [0, 2], [0, 3]], // R3F1
                 [[2, 2], [1, 2], [0, 0], [0, 4], [0, 5]], // R3F2 or R3F3
-                [[1, 0], [1, 4], [0, 2],  null ,  null ], // R2F1
+                [[1, 0], [1, 4], [0, 2],  null ,  null ], // R2F1 (up only)
                 [[1, 2], [0, 1], [0, 4],  null ,  null ], // R2F2 or R2F3
                 [ null , [5, 2], [4, 0], [4, 4], [3, 0]], // R4F1 (down only)
                 [ null , [5, 0], [5, 3], [4, 2], [4, 3]], // R5F4 or R5F3 (down only)
                 [ null ,  null , [5, 0], [5, 4], [4, 0]], // R5F1 (down only)
             ],
-            'minor 7': [
+            'Minor 7': [
                 [[5, 0], [5, 3], [4, 2], [3, 0], [3, 2]], // R6F1
                 [[5, 2], [4, 0], [4, 4], [3, 2], [3, 4]], // R6F2
                 [[5, 3], [4, 1], [3, 0], [3, 3], [2, 0]], // R6F4
                 [[4, 0], [4, 3], [3, 2], [2, 0], [2, 2]], // R5F1
                 [[4, 2], [3, 0], [3, 4], [2, 2], [2, 4]], // R5F2
                 [[4, 3], [3, 1], [2, 0], [2, 3], [1, 1]], // R5F4
+                [[3, 0], [3, 3], [2, 2], [1, 1], [1, 3]], // R4F1
+                [[3, 2], [2, 0], [2, 4], [1, 3], [0, 0]], // R4F2
+                [[3, 3], [2, 1], [1, 1], [1, 4], [0, 1]], // R4F4
+                [[2, 0], [2, 3], [1, 3], [0, 1], [0, 3]], // R3F1
+                [[2, 2], [1, 1], [0, 0], [0, 3], [0, 5]], // R3F2 or R3F3
+                [[1, 0], [1, 3], [0, 2],  null ,  null ], // R2F1 (up only)
+                [[1, 2], [0, 0], [0, 4],  null ,  null ], // R2F2 or R2F3
+                [ null , [5, 1], [4, 0], [4, 3], [3, 0]], // R4F1 (down only)
+                [ null , [5, 0], [5, 4], [4, 2], [4, 4]], // R5F4 or R5F3 (down only)
+                [ null ,  null , [5, 0], [5, 3], [4, 0]], // R5F1 (down only)
             ],
-            'dominant 7': [
-                [[5, 0], [5, 4], [4, 2], [3, 0], [3, 2]], // R6F1
-                [[5, 2], [4, 1], [4, 4], [3, 2], [3, 4]], // R6F2
-                [[5, 3], [4, 2], [3, 0], [3, 3], [2, 0]], // R6F4
-                [[4, 0], [4, 4], [3, 2], [2, 0], [2, 2]], // R5F1
-                [[4, 2], [3, 1], [3, 4], [2, 2], [2, 4]], // R5F2
-            ],
-            'half diminished 7': [
-                [[5, 0], [5, 3], [4, 1], [3, 0], [3, 2]], // R6F1
-                [[5, 2], [4, 0], [4, 3], [3, 2], [3, 4]], // R6F2
-                [[5, 4], [4, 2], [3, 0], [3, 4], [2, 1]], // R6F4
-                [[4, 0], [4, 3], [3, 1], [2, 0], [2, 2]], // R5F1
-                [[4, 2], [3, 0], [3, 3], [2, 2], [2, 4]], // R5F2
-            ],
+            // 'Dominant 7': [
+            //     [[5, 0], [5, 4], [4, 2], [3, 0], [3, 2]], // R6F1
+            //     [[5, 2], [4, 1], [4, 4], [3, 2], [3, 4]], // R6F2
+            //     [[5, 3], [4, 2], [3, 0], [3, 3], [2, 0]], // R6F4
+            //     [[4, 0], [4, 4], [3, 2], [2, 0], [2, 2]], // R5F1
+            //     [[4, 2], [3, 1], [3, 4], [2, 2], [2, 4]], // R5F2
+            // ],
+            // 'half diminished 7': [
+            //     [[5, 0], [5, 3], [4, 1], [3, 0], [3, 2]], // R6F1
+            //     [[5, 2], [4, 0], [4, 3], [3, 2], [3, 4]], // R6F2
+            //     [[5, 4], [4, 2], [3, 0], [3, 4], [2, 1]], // R6F4
+            //     [[4, 0], [4, 3], [3, 1], [2, 0], [2, 2]], // R5F1
+            //     [[4, 2], [3, 0], [3, 3], [2, 2], [2, 4]], // R5F2
+            // ],
         };
 
         let grid = [...Array(6)].map(() => Array(6).fill(''));
@@ -94,12 +111,17 @@
             });
         }
 
-        function handleButtonClick(i, j) {
+        function handleButtonClick(i, j, chordType, isUpward) {
             const button = document.getElementById(`cell-${i}-${j}`);
             const currentNote = currentQuiz[quizIndex];
 
             if (currentNote.position[0] === i && currentNote.position[1] === j) {
-                button.innerText = currentNote.note;
+                let _curNote = currentNote.note;
+                if (_curNote === '1') {
+                    const direction = isUpward ? '⬆️' : '⬇️';
+                    _curNote = `1\n${abbr[chordType]} ${direction}`;
+                }
+                button.innerText = _curNote;
                 quizIndex += 1;
                 if (quizIndex >= currentQuiz.length) {
                     // alert('Completed! Start a new round.');
@@ -122,12 +144,12 @@
             // Randomly select a chordNotes and an arpeggio
             const chordKeys = Object.keys(chordNotes);
             const selectedChord = chordKeys[Math.floor(Math.random() * chordKeys.length)];
-            const selectedChordNotes = [...chordNotes[selectedChord]]; 
+            const selectedChordNotes = [...chordNotes[selectedChord]];  // object copy
             const selectedArpeggios = arpeggios[selectedChord];
-            const selectedArpeggio = selectedArpeggios[Math.floor(Math.random() * selectedArpeggios.length)];
+            const selectedArpeggio = [...selectedArpeggios[Math.floor(Math.random() * selectedArpeggios.length)]];  // object copy
 
             // random direction
-            const isUpward = Math.random() >= 0.5;
+            let isUpward = Math.random() >= 0.5;
 
             if (isUpward) {
                 if (selectedArpeggio[0] === null) {
@@ -149,11 +171,11 @@
             quizIndex = 0;
 
             // Show the first note of the quiz on the button grid
-            handleButtonClick(currentQuiz[0].position[0], currentQuiz[0].position[1]);
+            handleButtonClick(currentQuiz[0].position[0], currentQuiz[0].position[1], selectedChord, isUpward);
 
             // Show quiz info
-            const direction = isUpward ? 'Upward' : 'Downward';
-            document.getElementById('quiz-info').innerText = `Chord: ${selectedChord}, Direction: ${direction}`;
+            const direction = isUpward ? '⬆️' : '⬇️';
+            document.getElementById('quiz-info').innerText = `${selectedChord} ${direction}`;
         }
     </script>
 </body>
