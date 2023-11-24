@@ -86,7 +86,7 @@
         }
 
         function generateQuiz(chord, arpeggio) {
-            return arpeggio.map((position, index) => {
+            return arpeggio.filter(item => item !== null).map((position, index) => {
                 return {
                     note: chord[index],
                     position: position,
@@ -129,16 +129,19 @@
             // random direction
             const isUpward = Math.random() >= 0.5;
 
-            // if downward, reverse the order
-            if (!isUpward) {
-                selectedArpeggio.reverse();
-                selectedChordNotes.reverse();
-            }
-
-            // if there's null in the arpeggio, we mustn't make null the starting note.
-            while (selectedArpeggio[0] === null) {
-                selectedArpeggio.push(selectedArpeggio.shift());
-                selectedChordNotes.push(selectedChordNotes.shift());
+            if (isUpward) {
+                if (selectedArpeggio[0] === null) {
+                    selectedArpeggio.reverse();
+                    selectedChordNotes.reverse();
+                    isUpward = false;
+                }
+            } else {
+                if (selectedArpeggio[selectedArpeggio.length - 1] === null) {
+                    isUpward = true;
+                } else {
+                    selectedArpeggio.reverse();
+                    selectedChordNotes.reverse();
+                }
             }
 
             // Generate quiz
