@@ -16,21 +16,26 @@
 <body>
     <h1>Guitar Arpeggio Practice Tool</h1>
     <p id="quiz-info"></p>
+    <h3>Select Chord Types</h3>
+    <input type="checkbox" id="Major 7" checked> Major 7<br>
+    <input type="checkbox" id="Minor 7" checked> Minor 7<br>
+    <input type="checkbox" id="Dominant 7" checked> Dominant 7<br>
+    <input type="checkbox" id="Half Diminished 7" checked> Half Diminished 7<br>
     <table id="grid"></table>
     <button onclick="startNewRound()">Start New Round</button>
     <script>
         const chordNotes = {
             'Major 7': ['1', '3', '5', '7', '1'],
-            // 'Minor 7': ['1', 'b3', '5', 'b7', '1'],
-            // 'Dominant 7': ['1', '3', '5', 'b7', '1'],
-            // 'Half Diminished 7': ['1', 'b3', 'b5', 'b7', '1'],
+            'Minor 7': ['1', 'b3', '5', 'b7', '1'],
+            'Dominant 7': ['1', '3', '5', 'b7', '1'],
+            'Half Diminished 7': ['1', 'b3', 'b5', 'b7', '1'],
         };
 
         const abbr = {
             'Major 7': 'M7',
-            // 'Minor 7': 'm7',
-            // 'Dominant 7': '7',
-            // 'Half Diminished 7': 'm7b5',
+            'Minor 7': 'm7',
+            'Dominant 7': '7',
+            'Half Diminished 7': 'm7b5',
         }
 
         const arpeggios = {
@@ -54,39 +59,39 @@
                 [ null , [5, 0], [5, 3], [4, 2], [4, 3]], // R5F4 or R5F3 (down only)
                 [ null ,  null , [5, 0], [5, 4], [4, 0]], // R5F1 (down only)
             ],
-            // 'Minor 7': [
-            //     [[5, 0], [5, 3], [4, 2], [3, 0], [3, 2]], // R6F1
-            //     [[5, 2], [4, 0], [4, 4], [3, 2], [3, 4]], // R6F2
-            //     [[5, 3], [4, 1], [3, 0], [3, 3], [2, 0]], // R6F4
-            //     [[4, 0], [4, 3], [3, 2], [2, 0], [2, 2]], // R5F1
-            //     [[4, 2], [3, 0], [3, 4], [2, 2], [2, 4]], // R5F2
-            //     [[4, 3], [3, 1], [2, 0], [2, 3], [1, 1]], // R5F4
-            //     [[3, 0], [3, 3], [2, 2], [1, 1], [1, 3]], // R4F1
-            //     [[3, 2], [2, 0], [2, 4], [1, 3], [0, 0]], // R4F2
-            //     [[3, 3], [2, 1], [1, 1], [1, 4], [0, 1]], // R4F4
-            //     [[2, 0], [2, 3], [1, 3], [0, 1], [0, 3]], // R3F1
-            //     [[2, 2], [1, 1], [0, 0], [0, 3], [0, 5]], // R3F2 or R3F3
-            //     [[2, 2], [1, 1], [1, 5], [0, 3], [0, 5]], // R3F2 or R3F3 (version 2)
-            //     [[1, 0], [1, 3], [0, 2],  null ,  null ], // R2F1 (up only)
-            //     [[1, 2], [0, 0], [0, 4],  null ,  null ], // R2F2 or R2F3
-            //     [ null , [5, 1], [4, 0], [4, 3], [3, 0]], // R4F1 (down only)
-            //     [ null , [5, 0], [5, 4], [4, 2], [4, 4]], // R5F4 or R5F3 (down only)
-            //     [ null ,  null , [5, 0], [5, 3], [4, 0]], // R5F1 (down only)
-            // ],
-            // 'Dominant 7': [
-            //     [[5, 0], [5, 4], [4, 2], [3, 0], [3, 2]], // R6F1
-            //     [[5, 2], [4, 1], [4, 4], [3, 2], [3, 4]], // R6F2
-            //     [[5, 3], [4, 2], [3, 0], [3, 3], [2, 0]], // R6F4
-            //     [[4, 0], [4, 4], [3, 2], [2, 0], [2, 2]], // R5F1
-            //     [[4, 2], [3, 1], [3, 4], [2, 2], [2, 4]], // R5F2
-            // ],
-            // 'half diminished 7': [
-            //     [[5, 0], [5, 3], [4, 1], [3, 0], [3, 2]], // R6F1
-            //     [[5, 2], [4, 0], [4, 3], [3, 2], [3, 4]], // R6F2
-            //     [[5, 4], [4, 2], [3, 0], [3, 4], [2, 1]], // R6F4
-            //     [[4, 0], [4, 3], [3, 1], [2, 0], [2, 2]], // R5F1
-            //     [[4, 2], [3, 0], [3, 3], [2, 2], [2, 4]], // R5F2
-            // ],
+            'Minor 7': [
+                [[5, 0], [5, 3], [4, 2], [3, 0], [3, 2]], // R6F1
+                [[5, 2], [4, 0], [4, 4], [3, 2], [3, 4]], // R6F2
+                [[5, 3], [4, 1], [3, 0], [3, 3], [2, 0]], // R6F4
+                [[4, 0], [4, 3], [3, 2], [2, 0], [2, 2]], // R5F1
+                [[4, 2], [3, 0], [3, 4], [2, 2], [2, 4]], // R5F2
+                [[4, 3], [3, 1], [2, 0], [2, 3], [1, 1]], // R5F4
+                [[3, 0], [3, 3], [2, 2], [1, 1], [1, 3]], // R4F1
+                [[3, 2], [2, 0], [2, 4], [1, 3], [0, 0]], // R4F2
+                [[3, 3], [2, 1], [1, 1], [1, 4], [0, 1]], // R4F4
+                [[2, 0], [2, 3], [1, 3], [0, 1], [0, 3]], // R3F1
+                [[2, 2], [1, 1], [0, 0], [0, 3], [0, 5]], // R3F2 or R3F3
+                [[2, 2], [1, 1], [1, 5], [0, 3], [0, 5]], // R3F2 or R3F3 (version 2)
+                [[1, 0], [1, 3], [0, 2],  null ,  null ], // R2F1 (up only)
+                [[1, 2], [0, 0], [0, 4],  null ,  null ], // R2F2 or R2F3
+                [ null , [5, 1], [4, 0], [4, 3], [3, 0]], // R4F1 (down only)
+                [ null , [5, 0], [5, 4], [4, 2], [4, 4]], // R5F4 or R5F3 (down only)
+                [ null ,  null , [5, 0], [5, 3], [4, 0]], // R5F1 (down only)
+            ],
+            'Dominant 7': [
+                [[5, 0], [5, 4], [4, 2], [3, 0], [3, 2]], // R6F1
+                [[5, 2], [4, 1], [4, 4], [3, 2], [3, 4]], // R6F2
+                [[5, 3], [4, 2], [3, 0], [3, 3], [2, 0]], // R6F4
+                [[4, 0], [4, 4], [3, 2], [2, 0], [2, 2]], // R5F1
+                [[4, 2], [3, 1], [3, 4], [2, 2], [2, 4]], // R5F2
+            ],
+            'half diminished 7': [
+                [[5, 0], [5, 3], [4, 1], [3, 0], [3, 2]], // R6F1
+                [[5, 2], [4, 0], [4, 3], [3, 2], [3, 4]], // R6F2
+                [[5, 4], [4, 2], [3, 0], [3, 4], [2, 1]], // R6F4
+                [[4, 0], [4, 3], [3, 1], [2, 0], [2, 2]], // R5F1
+                [[4, 2], [3, 0], [3, 3], [2, 2], [2, 4]], // R5F2
+            ],
         };
 
         let grid = [...Array(6)].map(() => Array(6).fill(''));
@@ -144,9 +149,17 @@
                 }
             }
 
+            // Get selected chord types
+            const selectedChordTypes = Object.keys(chordNotes).filter(chordType => document.getElementById(chordType).checked);
+
+            if (selectedChordTypes.length === 0) {
+                alert('Please select at least one chord type.');
+                return;
+            }
+
             // Randomly select a chordNotes and an arpeggio
-            const chordKeys = Object.keys(chordNotes);
-            const selectedChord = chordKeys[Math.floor(Math.random() * chordKeys.length)];
+            // const chordKeys = Object.keys(chordNotes);
+            const selectedChord = selectedChordTypes[Math.floor(Math.random() * selectedChordTypes.length)];
             const selectedChordNotes = [...chordNotes[selectedChord]];  // object copy
             const selectedArpeggios = arpeggios[selectedChord];
             const selectedArpeggio = [...selectedArpeggios[Math.floor(Math.random() * selectedArpeggios.length)]];  // object copy
