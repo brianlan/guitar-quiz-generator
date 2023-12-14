@@ -1,0 +1,197 @@
+<meta charset="UTF-8">
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Guitar Arpeggio Practice Tool</title>
+    <style>
+        table, th, td {
+          border: 1px solid black;
+          border-collapse: collapse;
+        }
+        button {
+          width: 50px;
+          height: 50px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Guitar Arpeggio Practice Tool</h1>
+    <p id="quiz-info"></p>
+    <h3>Select Chord Types</h3>
+    <input type="checkbox" id="Major" onchange="saveCheckboxState(this)" checked> Major Scale<br>
+    <input type="checkbox" id="Pentatonic" onchange="saveCheckboxState(this)" checked> Pentatonic<br>
+    <input type="checkbox" id="Blues" onchange="saveCheckboxState(this)" checked> Blues<br>
+
+    <table id="grid"></table>
+    <button onclick="startNewRound()">Start New Round</button>
+    <script>
+        document.addEventListener('DOMContentLoaded', loadCheckboxStates);
+
+        function saveCheckboxState(checkbox) {
+            localStorage.setItem(checkbox.id, checkbox.checked);
+        }
+
+        function loadCheckboxStates() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                const checked = localStorage.getItem(checkbox.id);
+                // If the item is not in localStorage, it will be null and thus we use the default checked state
+                checkbox.checked = checked === null ? checkbox.checked : (checked === 'true');
+            });
+        }
+
+        function getRelativeFret(noteFret, rootNote, outputMode) {
+            const notesSharp = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+            const notesFlat = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+
+            const relativeNotes = outputMode === 'b' 
+                ? ['1', 'b2', '2', 'b3', '3', '4', 'b5', '5', 'b6', '6', 'b7', '7']
+                : ['1', '#1', '2', '#2', '3', '4', '#4', '5', '#5', '6', '#6', '7'];
+
+            const rootIndex = (outputMode === 'b' ? notesFlat : notesSharp).indexOf(rootNote);
+            const noteMapping = {};
+
+            for (let i = 0; i < 12; i++) {
+                const absoluteNote = outputMode === 'b' ? notesFlat[(rootIndex + i) % 12] : notesSharp[(rootIndex + i) % 12];
+                noteMapping[absoluteNote] = relativeNotes[i];
+            }
+
+            return noteFret.map(string => string.map(note => noteMapping[note] || note));
+        }
+
+        const chordNotes = {
+            'Major': ['1', '2', '3', '4', '5', '6', '7'],
+            'Pentatonic': ['1', '2', '3', '5', '6'],
+            'Blues': ['1', '2', 'b3', '3', '5', '6'],
+        };
+
+        const abbr = {
+            'Major': 'M',
+            'Pentatonic': 'P',
+            'Blues': 'B',
+        }
+
+        const fret_sharp = [
+            ['E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G'],
+            ['B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B', 'C', 'C#', 'D'],
+            ['G', 'G#', 'A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#'],
+            ['D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F'],
+            ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B', 'C'],
+            ['E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G'],
+        ]
+
+        const fret_flat = [
+            ['E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B', 'C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G'],
+            ['B', 'C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B', 'C', 'Db', 'D'],
+            ['G', 'Ab', 'A', 'Bb', 'B', 'C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb'],
+            ['D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B', 'C', 'Db', 'D', 'Eb', 'E', 'F'],
+            ['A', 'Bb', 'B', 'C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B', 'C'],
+            ['E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B', 'C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G'],
+        ]
+
+        let grid = [...Array(6)].map(() => Array(6).fill(''));
+        let currentQuiz = [];
+        let quizIndex = 0;
+
+        const table = document.getElementById('grid');
+        for (let i = 0; i < 6; i++) {
+            const row = table.insertRow();
+            for (let j = 0; j < 15; j++) {
+                const cell = row.insertCell();
+                const button = document.createElement('button');
+                button.id = `cell-${i}-${j}`;
+                button.addEventListener('click', () => handleButtonClick(i, j));
+                cell.appendChild(button);
+            }
+        }
+
+        function generateQuiz(chord, arpeggio) {
+            return arpeggio.filter(item => item !== null).map((position, index) => {
+                return {
+                    note: chord[index],
+                    position: position,
+                };
+            });
+        }
+
+        function handleButtonClick(i, j, chordType, isUpward, isFirstNote) {
+            const button = document.getElementById(`cell-${i}-${j}`);
+            const currentNote = currentQuiz[quizIndex];
+
+            if (currentNote.position[0] === i && currentNote.position[1] === j) {
+                let _curNote = currentNote.note;
+                if (isFirstNote) {
+                    const direction = isUpward ? '^': 'v';
+                    _curNote = `${currentNote.note}\n${abbr[chordType]} ${direction}`;
+                }
+                button.innerText = _curNote;
+                quizIndex += 1;
+                if (quizIndex >= currentQuiz.length) {
+                    // alert('Completed! Start a new round.');
+                    setTimeout(startNewRound, 1000);
+                }
+            } else {
+                alert('Incorrect! Try again.');
+            }
+        }
+
+        function startNewRound() {
+            console.log(getRelativeFret(fret_sharp, 'G', '#'));
+            console.log(getRelativeFret(fret_flat, 'Bb', 'b'));
+
+            // Clear grid
+            for (let i = 0; i < 6; i++) {
+                for (let j = 0; j < 6; j++) {
+                    const button = document.getElementById(`cell-${i}-${j}`);
+                    button.innerText = '';
+                }
+            }
+
+            // Get selected chord types
+            const selectedChordTypes = Object.keys(chordNotes).filter(chordType => document.getElementById(chordType).checked);
+
+            if (selectedChordTypes.length === 0) {
+                alert('Please select at least one chord type.');
+                return;
+            }
+
+            // Randomly select a chordNotes and an arpeggio
+            // const chordKeys = Object.keys(chordNotes);
+            const selectedChord = selectedChordTypes[Math.floor(Math.random() * selectedChordTypes.length)];
+            const selectedChordNotes = [...chordNotes[selectedChord]];  // object copy
+            const selectedArpeggios = arpeggios[selectedChord];
+            const selectedArpeggio = [...selectedArpeggios[Math.floor(Math.random() * selectedArpeggios.length)]];  // object copy
+
+            // random direction
+            let isUpward = Math.random() >= 0.5;
+
+            if (isUpward) {
+                if (selectedArpeggio[0] === null) {
+                    selectedArpeggio.reverse();
+                    selectedChordNotes.reverse();
+                    isUpward = false;
+                }
+            } else {
+                if (selectedArpeggio[selectedArpeggio.length - 1] === null) {
+                    isUpward = true;
+                } else {
+                    selectedArpeggio.reverse();
+                    selectedChordNotes.reverse();
+                }
+            }
+
+            // Generate quiz
+            currentQuiz = generateQuiz(selectedChordNotes, selectedArpeggio);
+            quizIndex = 0;
+
+            // Show the first note of the quiz on the button grid
+            handleButtonClick(currentQuiz[0].position[0], currentQuiz[0].position[1], selectedChord, isUpward, true);
+
+            // Show quiz info
+            const direction = isUpward ? '^': 'v';
+            document.getElementById('quiz-info').innerText = `${selectedChord} ${direction}`;
+        }
+    </script>
+</body>
+</html>
