@@ -122,7 +122,7 @@
             if (currentNote.position[0] === i && currentNote.position[1] === j) {
                 let _curNote = currentNote.note;
                 if (isFirstNote) {
-                    const direction = isUpward ? '^': 'v';
+                    const direction = isUpward ? '⬆️': '⬇️';
                     _curNote = `${currentNote.note}\n${abbr[chordType]} ${direction}`;
                 }
                 button.innerText = _curNote;
@@ -189,7 +189,7 @@
             handleButtonClick(currentQuiz[0].position[0], currentQuiz[0].position[1], selectedChord, isUpward, true);
 
             // Show quiz info
-            const direction = isUpward ? '^': 'v';
+            const direction = isUpward ? '⬆️': '⬇️';
             document.getElementById('quiz-info').innerText = `${selectedChord} ${direction}`;
         }
     </script>
