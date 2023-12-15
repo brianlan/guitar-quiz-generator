@@ -60,6 +60,25 @@
             });
         }
 
+        function findNearestPosition(matrix, startX, startY, target) {
+            let minDistance = Infinity;
+            let nearestPosition = null;
+
+            for (let i = 0; i < matrix.length; i++) {
+                for (let j = 0; j < matrix[i].length; j++) {
+                    if (matrix[i][j] === target) {
+                        let distance = Math.abs(startX - i) + Math.abs(startY - j);
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            nearestPosition = [i, j];
+                        }
+                    }
+                }
+            }
+
+            return nearestPosition;
+        }
+
         function randomSelectItem(array) {
             const randomIndex = Math.floor(Math.random() * array.length);
             return array[randomIndex];
@@ -67,24 +86,6 @@
 
         function randInt(maxLength) {
             return Math.floor(Math.random() * maxLength);
-        }
-
-        function getNoteDistance(a, b) {
-            let va = convertStrNoteToFloat(a);
-            let vb = convertStrNoteToFloat(b);
-            if (vb === 1) {
-                vb = 8;
-            }
-            return convertStrNoteToFloat(b) - convertStrNoteToFloat(a);
-        }
-
-        function convertStrNoteToFloat(note) {
-            if (note.length === 1) {
-                return parseInt(note);
-            } else if (note.length === 2) {
-                const adjustment = note.charAt(1) === '#' ? 0.5 : -0.5;
-                return parseInt(note) + adjustment;
-            }
         }
 
         function getRelativeFret(noteFret, rootNote, outputMode) {
@@ -193,9 +194,9 @@
             }
 
             const currentScale = randomSelectItem(selectedScales);
-            const startPosition = [randInt(6), randInt(num_cols - 1)];
+            let startPosition = [randInt(6), randInt(num_cols - 1)];
             let rootNote = fret_flat[startPosition[0]][startPosition[1]];
-            gtNoteSequence = scales[currentScale];
+            gtNoteSequence = [...scales[currentScale]];
 
             // translate fretboard to relative frets
             const lastChar = rootNote.charAt(rootNote.length - 1);
@@ -209,10 +210,11 @@
                 gtNoteSequence.reverse();
             }
 
-            let startFromMiddle = Math.random() >= 0.8;
+            let startFromMiddle = Math.random() >= 0.7;
             if (startFromMiddle) {
                 const middleIndex = 1 + randInt(gtNoteSequence.length - 2);
                 gtNoteSequence = gtNoteSequence.slice(middleIndex, gtNoteSequence.length - 1).concat(gtNoteSequence);
+                startPosition = findNearestPosition(relFret, startPosition[0], startPosition[1], gtNoteSequence[0]);
             }
 
             // Show the first note of the quiz on the button grid
