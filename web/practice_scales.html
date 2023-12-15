@@ -18,26 +18,45 @@
 <body>
     <h1>Guitar Arpeggio Practice Tool</h1>
     <p id="quiz-info"></p>
-    <h3>Select Chord Types</h3>
-    <input type="checkbox" id="Major" onchange="saveCheckboxState(this)" checked> Major Scale<br>
-    <input type="checkbox" id="Pentatonic" onchange="saveCheckboxState(this)" checked> Pentatonic<br>
-    <input type="checkbox" id="Blues" onchange="saveCheckboxState(this)" checked> Blues<br>
+    <table>
+        <tr>
+            <th>Scale Types</th>
+            <th>Sharp or Flat</th>
+        </tr>
+        <tr>
+            <td>
+                <input type="checkbox" id="Major" onchange="saveCheckboxState(this)" checked> Major Scale<br>
+                <input type="checkbox" id="Pentatonic" onchange="saveCheckboxState(this)" checked> Pentatonic<br>
+                <input type="checkbox" id="Blues" onchange="saveCheckboxState(this)" checked> Blues<br>
+            </td>
+            <td>
+                <input type="radio" id="sharp" name="sharp_or_flat" value="sharp" onchange="saveCheckboxState(this)"><label for="html">#</label><br>
+                <input type="radio" id="flat" name="sharp_or_flat" value="flat" onchange="saveCheckboxState(this)" checked><label for="html">b</label><br>
+            </td>
+
+        </tr>
+    </table>
+    
 
     <table id="grid"></table>
     <button onclick="startNewRound()">Start New Round</button>
     <script>
         document.addEventListener('DOMContentLoaded', loadCheckboxStates);
-
+        
+        const notesSharp = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+        const notesFlat = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+        
         function saveCheckboxState(checkbox) {
             localStorage.setItem(checkbox.id, checkbox.checked);
         }
 
         function loadCheckboxStates() {
             const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-            checkboxes.forEach(checkbox => {
-                const checked = localStorage.getItem(checkbox.id);
+            const radioButtons = document.querySelectorAll('input[type="radio"]');
+            Array.from(checkboxes).concat(Array.from(radioButtons)).forEach(item => {
+                const checked = localStorage.getItem(item.id);
                 // If the item is not in localStorage, it will be null and thus we use the default checked state
-                checkbox.checked = checked === null ? checkbox.checked : (checked === 'true');
+                item.checked = checked === null ? item.checked : (checked === 'true');
             });
         }
 
@@ -50,10 +69,25 @@
             return Math.floor(Math.random() * maxLength);
         }
 
-        function getRelativeFret(noteFret, rootNote, outputMode) {
-            const notesSharp = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-            const notesFlat = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+        function getNoteDistance(a, b) {
+            let va = convertStrNoteToFloat(a);
+            let vb = convertStrNoteToFloat(b);
+            if (vb === 1) {
+                vb = 8;
+            }
+            return convertStrNoteToFloat(b) - convertStrNoteToFloat(a);
+        }
 
+        function convertStrNoteToFloat(note) {
+            if (note.length === 1) {
+                return parseInt(note);
+            } else if (note.length === 2) {
+                const adjustment = note.charAt(1) === '#' ? 0.5 : -0.5;
+                return parseInt(note) + adjustment;
+            }
+        }
+
+        function getRelativeFret(noteFret, rootNote, outputMode) {
             const relativeNotes = outputMode === 'b' 
                 ? ['1', 'b2', '2', 'b3', '3', '4', 'b5', '5', 'b6', '6', 'b7', '7']
                 : ['1', '#1', '2', '#2', '3', '4', '#4', '5', '#5', '6', '#6', '7'];
@@ -142,9 +176,6 @@
         }
 
         function startNewRound() {
-            console.log(getRelativeFret(fret_sharp, 'G', '#'));
-            console.log(getRelativeFret(fret_flat, 'Bb', 'b'));
-
             // Clear grid
             for (let i = 0; i < 6; i++) {
                 for (let j = 0; j < num_cols; j++) {
@@ -163,18 +194,25 @@
 
             const currentScale = randomSelectItem(selectedScales);
             const startPosition = [randInt(6), randInt(num_cols - 1)];
-            const currentKey = fret_flat[startPosition[0]][startPosition[1]];
-            const lastChar = currentKey.charAt(currentKey.length - 1);
-            const is_sharp = lastChar === '#';
-            relFret = getRelativeFret(is_sharp ? fret_sharp : fret_flat, currentKey, is_sharp ? '#' : 'b')
-            // const gtNoteSequence = scales[currentScale];
+            let rootNote = fret_flat[startPosition[0]][startPosition[1]];
             gtNoteSequence = scales[currentScale];
+
+            // translate fretboard to relative frets
+            const lastChar = rootNote.charAt(rootNote.length - 1);
+            const is_sharp = lastChar === '#';
+            relFret = getRelativeFret(is_sharp ? fret_sharp : fret_flat, rootNote, is_sharp ? '#' : 'b')
 
             // random direction
             let isUpward = Math.random() >= 0.5;
 
             if (!isUpward) {
                 gtNoteSequence.reverse();
+            }
+
+            let startFromMiddle = Math.random() >= 0.8;
+            if (startFromMiddle) {
+                const middleIndex = 1 + randInt(gtNoteSequence.length - 2);
+                gtNoteSequence = gtNoteSequence.slice(middleIndex, gtNoteSequence.length - 1).concat(gtNoteSequence);
             }
 
             // Show the first note of the quiz on the button grid
