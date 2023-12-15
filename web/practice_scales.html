@@ -41,6 +41,15 @@
             });
         }
 
+        function randomSelectItem(array) {
+            const randomIndex = Math.floor(Math.random() * array.length);
+            return array[randomIndex];
+        }
+
+        function randInt(maxLength) {
+            return Math.floor(Math.random() * maxLength);
+        }
+
         function getRelativeFret(noteFret, rootNote, outputMode) {
             const notesSharp = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
             const notesFlat = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
@@ -60,10 +69,10 @@
             return noteFret.map(string => string.map(note => noteMapping[note] || note));
         }
 
-        const chordNotes = {
-            'Major': ['1', '2', '3', '4', '5', '6', '7'],
-            'Pentatonic': ['1', '2', '3', '5', '6'],
-            'Blues': ['1', '2', 'b3', '3', '5', '6'],
+        const scales = {
+            'Major': ['1', '2', '3', '4', '5', '6', '7', '1'],
+            'Pentatonic': ['1', '2', '3', '5', '6', '1'],
+            'Blues': ['1', '2', 'b3', '3', '5', '6', '1'],
         };
 
         const abbr = {
@@ -90,14 +99,16 @@
             ['E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B', 'C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G'],
         ]
 
-        let grid = [...Array(6)].map(() => Array(6).fill(''));
-        let currentQuiz = [];
-        let quizIndex = 0;
+        const num_cols = 15;
+        let grid = [...Array(6)].map(() => Array(num_cols).fill(''));
+        let gtNoteSequence = [];
+        let relFret = [];
+        let noteIndex = 0;
 
         const table = document.getElementById('grid');
         for (let i = 0; i < 6; i++) {
             const row = table.insertRow();
-            for (let j = 0; j < 15; j++) {
+            for (let j = 0; j < num_cols; j++) {
                 const cell = row.insertCell();
                 const button = document.createElement('button');
                 button.id = `cell-${i}-${j}`;
@@ -106,34 +117,28 @@
             }
         }
 
-        function generateQuiz(chord, arpeggio) {
-            return arpeggio.filter(item => item !== null).map((position, index) => {
-                return {
-                    note: chord[index],
-                    position: position,
-                };
-            });
-        }
-
-        function handleButtonClick(i, j, chordType, isUpward, isFirstNote) {
+        function handleButtonClick(i, j, currentScale) {
             const button = document.getElementById(`cell-${i}-${j}`);
-            const currentNote = currentQuiz[quizIndex];
+            const currentGtNote = gtNoteSequence[noteIndex];
 
-            if (currentNote.position[0] === i && currentNote.position[1] === j) {
-                let _curNote = currentNote.note;
-                if (isFirstNote) {
-                    const direction = isUpward ? '⬆️': '⬇️';
-                    _curNote = `${currentNote.note}\n${abbr[chordType]} ${direction}`;
-                }
-                button.innerText = _curNote;
-                quizIndex += 1;
-                if (quizIndex >= currentQuiz.length) {
-                    // alert('Completed! Start a new round.');
+            if (relFret[i][j] === currentGtNote) {
+                button.innerText = currentGtNote;
+                noteIndex += 1;
+                if (noteIndex >= gtNoteSequence.length) {
                     setTimeout(startNewRound, 1000);
                 }
             } else {
                 alert('Incorrect! Try again.');
             }
+        }
+
+        function initFirstButton(i, j, currentScale, isUpward) {
+            const button = document.getElementById(`cell-${i}-${j}`);
+            const currentNote = gtNoteSequence[noteIndex];
+            const direction = isUpward ? '⬆️': '⬇️';
+            _curNote = `${currentNote}\n${abbr[currentScale]} ${direction}`;
+            button.innerText = _curNote;
+            noteIndex += 1;
         }
 
         function startNewRound() {
@@ -142,55 +147,43 @@
 
             // Clear grid
             for (let i = 0; i < 6; i++) {
-                for (let j = 0; j < 6; j++) {
+                for (let j = 0; j < num_cols; j++) {
                     const button = document.getElementById(`cell-${i}-${j}`);
                     button.innerText = '';
                 }
             }
 
-            // Get selected chord types
-            const selectedChordTypes = Object.keys(chordNotes).filter(chordType => document.getElementById(chordType).checked);
+            // Get selected scale type
+            const selectedScales = Object.keys(scales).filter(scaleType => document.getElementById(scaleType).checked);
 
-            if (selectedChordTypes.length === 0) {
-                alert('Please select at least one chord type.');
+            if (selectedScales.length === 0) {
+                alert('Please select at least one scale type.');
                 return;
             }
 
-            // Randomly select a chordNotes and an arpeggio
-            // const chordKeys = Object.keys(chordNotes);
-            const selectedChord = selectedChordTypes[Math.floor(Math.random() * selectedChordTypes.length)];
-            const selectedChordNotes = [...chordNotes[selectedChord]];  // object copy
-            const selectedArpeggios = arpeggios[selectedChord];
-            const selectedArpeggio = [...selectedArpeggios[Math.floor(Math.random() * selectedArpeggios.length)]];  // object copy
+            const currentScale = randomSelectItem(selectedScales);
+            const startPosition = [randInt(6), randInt(num_cols - 1)];
+            const currentKey = fret_flat[startPosition[0]][startPosition[1]];
+            const lastChar = currentKey.charAt(currentKey.length - 1);
+            const is_sharp = lastChar === '#';
+            relFret = getRelativeFret(is_sharp ? fret_sharp : fret_flat, currentKey, is_sharp ? '#' : 'b')
+            // const gtNoteSequence = scales[currentScale];
+            gtNoteSequence = scales[currentScale];
 
             // random direction
             let isUpward = Math.random() >= 0.5;
 
-            if (isUpward) {
-                if (selectedArpeggio[0] === null) {
-                    selectedArpeggio.reverse();
-                    selectedChordNotes.reverse();
-                    isUpward = false;
-                }
-            } else {
-                if (selectedArpeggio[selectedArpeggio.length - 1] === null) {
-                    isUpward = true;
-                } else {
-                    selectedArpeggio.reverse();
-                    selectedChordNotes.reverse();
-                }
+            if (!isUpward) {
+                gtNoteSequence.reverse();
             }
 
-            // Generate quiz
-            currentQuiz = generateQuiz(selectedChordNotes, selectedArpeggio);
-            quizIndex = 0;
-
             // Show the first note of the quiz on the button grid
-            handleButtonClick(currentQuiz[0].position[0], currentQuiz[0].position[1], selectedChord, isUpward, true);
+            noteIndex = 0;
+            initFirstButton(startPosition[0], startPosition[1], currentScale, isUpward);
 
             // Show quiz info
             const direction = isUpward ? '⬆️': '⬇️';
-            document.getElementById('quiz-info').innerText = `${selectedChord} ${direction}`;
+            document.getElementById('quiz-info').innerText = `${currentScale} ${direction}`;
         }
     </script>
 </body>
