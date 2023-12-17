@@ -210,7 +210,7 @@
                 gtNoteSequence.reverse();
             }
 
-            let startFromMiddle = Math.random() >= 0.7;
+            let startFromMiddle = Math.random() >= 0.4;
             if (startFromMiddle) {
                 const middleIndex = 1 + randInt(gtNoteSequence.length - 2);
                 gtNoteSequence = gtNoteSequence.slice(middleIndex, gtNoteSequence.length - 1).concat(gtNoteSequence);
