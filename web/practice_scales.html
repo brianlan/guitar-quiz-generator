@@ -20,14 +20,18 @@
     <p id="quiz-info"></p>
     <table>
         <tr>
-            <th>Scale Types</th>
+            <th>Pattern Types</th>
             <th>Sharp or Flat</th>
         </tr>
         <tr>
             <td>
                 <input type="checkbox" id="Major" onchange="saveCheckboxState(this)" checked> Major Scale<br>
-                <input type="checkbox" id="Pentatonic" onchange="saveCheckboxState(this)" checked> Pentatonic<br>
-                <input type="checkbox" id="Blues" onchange="saveCheckboxState(this)" checked> Blues<br>
+                <input type="checkbox" id="Pentatonic" onchange="saveCheckboxState(this)" checked> Pentatonic Scale<br>
+                <input type="checkbox" id="Blues" onchange="saveCheckboxState(this)" checked> Blues Scale<br>
+                <input type="checkbox" id="Major7" onchange="saveCheckboxState(this)" checked> Major 7 Chord<br>
+                <input type="checkbox" id="Minor7" onchange="saveCheckboxState(this)" checked> Minor 7 Chord<br>
+                <input type="checkbox" id="Dominant7" onchange="saveCheckboxState(this)" checked> Dominant 7 Chord<br>
+                <input type="checkbox" id="HalfDiminished7" onchange="saveCheckboxState(this)" checked> Half Diminished 7 Chord<br>
             </td>
             <td>
                 <input type="radio" id="sharp" name="sharp_or_flat" value="sharp" onchange="saveCheckboxState(this)"><label for="html">#</label><br>
@@ -104,16 +108,25 @@
             return noteFret.map(string => string.map(note => noteMapping[note] || note));
         }
 
-        const scales = {
+        const patterns = {
             'Major': ['1', '2', '3', '4', '5', '6', '7', '1'],
             'Pentatonic': ['1', '2', '3', '5', '6', '1'],
             'Blues': ['1', '2', 'b3', '3', '5', '6', '1'],
+            'Major7': ['1', '3', '5', '7', '1'],
+            'Minor7': ['1', 'b3', '5', 'b7', '1'],
+            'Dominant7': ['1', '3', '5', 'b7', '1'],
+            'HalfDiminished7': ['1', 'b3', 'b5', 'b7', '1'],
         };
 
         const abbr = {
-            'Major': 'M',
-            'Pentatonic': 'P',
-            'Blues': 'B',
+            'Major': 'M-S',
+            'Pentatonic': 'P-S',
+            'Blues': 'B-S',
+            'Major7': 'M7',
+            'Minor7': 'm7',
+            'Dominant7': '7',
+            'HalfDiminished7': 'm7b5',
+            // 'HalfDiminished7': '⏀7',
         }
 
         const fret_sharp = [
@@ -152,7 +165,7 @@
             }
         }
 
-        function handleButtonClick(i, j, currentScale) {
+        function handleButtonClick(i, j) {
             const button = document.getElementById(`cell-${i}-${j}`);
             const currentGtNote = gtNoteSequence[noteIndex];
 
@@ -167,11 +180,11 @@
             }
         }
 
-        function initFirstButton(i, j, currentScale, isUpward) {
+        function initFirstButton(i, j, currentPattern, isUpward) {
             const button = document.getElementById(`cell-${i}-${j}`);
             const currentNote = gtNoteSequence[noteIndex];
             const direction = isUpward ? '⬆️': '⬇️';
-            _curNote = `${currentNote}\n${abbr[currentScale]} ${direction}`;
+            _curNote = `${currentNote}\n${abbr[currentPattern]} ${direction}`;
             button.innerText = _curNote;
             noteIndex += 1;
         }
@@ -185,18 +198,18 @@
                 }
             }
 
-            // Get selected scale type
-            const selectedScales = Object.keys(scales).filter(scaleType => document.getElementById(scaleType).checked);
+            // Get selected pattern type
+            const selectedPatterns = Object.keys(patterns).filter(patternType => document.getElementById(patternType).checked);
 
-            if (selectedScales.length === 0) {
-                alert('Please select at least one scale type.');
+            if (selectedPatterns.length === 0) {
+                alert('Please select at least one pattern type.');
                 return;
             }
 
-            const currentScale = randomSelectItem(selectedScales);
+            const currentPattern = randomSelectItem(selectedPatterns);
             let startPosition = [randInt(6), randInt(num_cols - 1)];
             let rootNote = fret_flat[startPosition[0]][startPosition[1]];
-            gtNoteSequence = [...scales[currentScale]];
+            gtNoteSequence = [...patterns[currentPattern]];
 
             // translate fretboard to relative frets
             const lastChar = rootNote.charAt(rootNote.length - 1);
@@ -219,11 +232,11 @@
 
             // Show the first note of the quiz on the button grid
             noteIndex = 0;
-            initFirstButton(startPosition[0], startPosition[1], currentScale, isUpward);
+            initFirstButton(startPosition[0], startPosition[1], currentPattern, isUpward);
 
             // Show quiz info
             const direction = isUpward ? '⬆️': '⬇️';
-            document.getElementById('quiz-info').innerText = `${currentScale} ${direction}`;
+            document.getElementById('quiz-info').innerText = `${currentPattern} ${direction}`;
         }
     </script>
 </body>
