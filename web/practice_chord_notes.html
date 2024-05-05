@@ -1,0 +1,168 @@
+<meta charset="UTF-8">
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Guitar Chord Note Practice Tool</title>
+    <style>
+        table,
+        th,
+        td {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+
+        button {
+            width: 50px;
+            height: 50px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Guitar Chord Note Practice Tool</h1>
+    <p id="quiz-info"></p>
+    <table>
+        <tr>
+            <th>Chord Note</th>
+            <th>Sharp or Flat</th>
+        </tr>
+        <tr>
+            <td> <input type="radio" id="3" name="chord_note" value="3" checked> 3<br> <input type="radio" id="5"
+                    name="chord_note" value="5"> 5<br> <input type="radio" id="7" name="chord_note" value="7"> 7<br>
+                <input type="radio" id="b3" name="chord_note" value="b3"> b3<br> <input type="radio" id="b5"
+                    name="chord_note" value="b5"> b5<br> <input type="radio" id="b7" name="chord_note" value="b7">
+                b7<br>
+            </td>
+            <td> <input type="radio" id="sharp" name="sharp_or_flat" value="sharp"><label for="html">#</label><br>
+                <input type="radio" id="flat" name="sharp_or_flat" value="flat" checked><label for="html">b</label><br>
+            </td>
+        </tr>
+    </table>
+
+
+    <table id="grid"></table>
+    <button onclick="startNewRound()">Start New Round</button>
+    <script>
+        const notesSharp = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+        const notesFlat = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+
+        const fret_sharp = [
+            ['E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G'],
+            ['B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B', 'C', 'C#', 'D'],
+            ['G', 'G#', 'A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#'],
+            ['D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F'],
+            ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B', 'C'],
+            ['E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G'],
+        ]
+
+        const fret_flat = [
+            ['E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B', 'C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G'],
+            ['B', 'C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B', 'C', 'Db', 'D'],
+            ['G', 'Ab', 'A', 'Bb', 'B', 'C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb'],
+            ['D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B', 'C', 'Db', 'D', 'Eb', 'E', 'F'],
+            ['A', 'Bb', 'B', 'C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B', 'C'],
+            ['E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B', 'C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G'],
+        ]
+
+        const num_cols = 15;
+        let grid = [...Array(6)].map(() => Array(num_cols).fill(''));
+        let relFret = [];
+        let noteIndex = 0;
+        let correctClicks = 0;
+        let chordNote = '';
+
+        const table = document.getElementById('grid');
+        for (let i = 0; i < 6; i++) {
+            const row = table.insertRow();
+            for (let j = 0; j < num_cols; j++) {
+                const cell = row.insertCell();
+                const button = document.createElement('button');
+                button.id = `cell-${i}-${j}`;
+                button.addEventListener('click', () => handleButtonClick(i, j));
+                cell.appendChild(button);
+            }
+        }
+
+        function handleButtonClick(i, j) {
+            const button = document.getElementById(`cell-${i}-${j}`);
+
+            if (relFret[i][j] === chordNote) {
+                button.innerText = chordNote;
+                correctClicks++;
+                if (correctClicks >= 4) {
+                    setTimeout(startNewRound, 1000);
+                }
+            } else {
+                alert('Incorrect! Try again.');
+            }
+        }
+
+        function startNewRound() {
+            // Clear grid
+            for (let i = 0; i < 6; i++) {
+                for (let j = 0; j < num_cols; j++) {
+                    const button = document.getElementById(`cell-${i}-${j}`);
+                    button.innerText = '';
+                }
+            }
+
+            // Get selected chord note
+            const chordNoteRadios = document.getElementsByName('chord_note');
+            for (const radio of chordNoteRadios) {
+                if (radio.checked) {
+                    chordNote = radio.value;
+                    break;
+                }
+            }
+
+            // Get selected sharp/flat
+            const sharpFlatRadios = document.getElementsByName('sharp_or_flat');
+            let sharpFlat = '';
+            for (const radio of sharpFlatRadios) {
+                if (radio.checked) {
+                    sharpFlat = radio.value;
+                    break;
+                }
+            }
+
+            // Randomly select root note position
+            const rootString = Math.floor(Math.random() * 6);
+            const rootFret = Math.floor(Math.random() * 5) + 5; // only select frets 5-9
+
+            // Get relative fret based on root note
+            const rootNote = sharpFlat === 'sharp' ? fret_sharp[rootString][rootFret] : fret_flat[rootString][rootFret];
+            relFret = getRelativeFret(sharpFlat === 'sharp' ? fret_sharp : fret_flat, rootNote, sharpFlat);
+
+            // Display root note
+            const rootButton = document.getElementById(`cell-${rootString}-${rootFret}`);
+            rootButton.innerText = '1';
+
+            // Reset state
+            noteIndex = 0;
+            correctClicks = 0;
+
+            // Show quiz info
+            const quizInfo = document.getElementById('quiz-info');
+            quizInfo.innerText = `Find at least 4 "${chordNote}" notes relative to the root note "1"`;
+        }
+
+        function getRelativeFret(noteFret, rootNote, outputMode) {
+            const relativeNotes = outputMode === 'flat'
+                ? ['1', 'b2', '2', 'b3', '3', '4', 'b5', '5', 'b6', '6', 'b7', '7']
+                : ['1', '#1', '2', '#2', '3', '4', '#4', '5', '#5', '6', '#6', '7'];
+
+            const rootIndex = (outputMode === 'flat' ? notesFlat : notesSharp).indexOf(rootNote);
+            const noteMapping = {};
+
+            for (let i = 0; i < 12; i++) {
+                const absoluteNote = outputMode === 'flat' ? notesFlat[(rootIndex + i) % 12] : notesSharp[(rootIndex + i) % 12];
+                noteMapping[absoluteNote] = relativeNotes[i];
+            }
+
+            return noteFret.map(string => string.map(note => noteMapping[note] || note));
+        }
+    </script>
+</body>
+
+</html>

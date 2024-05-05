@@ -65,6 +65,9 @@ class NoteEvent:
     note: Note
     duration: Duration
 
+    def __repr__(self):
+        return f"{self.note}({self.duration.name})"
+
 
 @dataclass
 class RestEvent:
@@ -109,16 +112,52 @@ class Chord:
 
 
 class ScaleType(Enum):
-    MAJOR = [Interval.UNISON, Interval.MAJOR_SECOND, Interval.MAJOR_THIRD, Interval.PERFECT_FOURTH,
-             Interval.PERFECT_FIFTH, Interval.MAJOR_SIXTH, Interval.MAJOR_SEVENTH]
-    NATURAL_MINOR = [Interval.UNISON, Interval.MAJOR_SECOND, Interval.MINOR_THIRD, Interval.PERFECT_FOURTH,
-                     Interval.PERFECT_FIFTH, Interval.MINOR_SIXTH, Interval.MINOR_SEVENTH]
-    HARMONIC_MINOR = [Interval.UNISON, Interval.MAJOR_SECOND, Interval.MINOR_THIRD, Interval.PERFECT_FOURTH,
-                      Interval.PERFECT_FIFTH, Interval.MINOR_SIXTH, Interval.MAJOR_SEVENTH]
-    MELODIC_MINOR_ASCENDING = [Interval.UNISON, Interval.MAJOR_SECOND, Interval.MINOR_THIRD, Interval.PERFECT_FOURTH,
-                               Interval.PERFECT_FIFTH, Interval.MAJOR_SIXTH, Interval.MAJOR_SEVENTH]
-    MELODIC_MINOR_DESCENDING = [Interval.UNISON, Interval.MAJOR_SECOND, Interval.MINOR_THIRD, Interval.PERFECT_FOURTH,
-                                Interval.PERFECT_FIFTH, Interval.MINOR_SIXTH, Interval.MINOR_SEVENTH]
+    MAJOR = [
+        Interval.UNISON,
+        Interval.MAJOR_SECOND,
+        Interval.MAJOR_THIRD,
+        Interval.PERFECT_FOURTH,
+        Interval.PERFECT_FIFTH,
+        Interval.MAJOR_SIXTH,
+        Interval.MAJOR_SEVENTH,
+    ]
+    NATURAL_MINOR = [
+        Interval.UNISON,
+        Interval.MAJOR_SECOND,
+        Interval.MINOR_THIRD,
+        Interval.PERFECT_FOURTH,
+        Interval.PERFECT_FIFTH,
+        Interval.MINOR_SIXTH,
+        Interval.MINOR_SEVENTH,
+    ]
+    HARMONIC_MINOR = [
+        Interval.UNISON,
+        Interval.MAJOR_SECOND,
+        Interval.MINOR_THIRD,
+        Interval.PERFECT_FOURTH,
+        Interval.PERFECT_FIFTH,
+        Interval.MINOR_SIXTH,
+        Interval.MAJOR_SEVENTH,
+    ]
+    MELODIC_MINOR_ASCENDING = [
+        Interval.UNISON,
+        Interval.MAJOR_SECOND,
+        Interval.MINOR_THIRD,
+        Interval.PERFECT_FOURTH,
+        Interval.PERFECT_FIFTH,
+        Interval.MAJOR_SIXTH,
+        Interval.MAJOR_SEVENTH,
+    ]
+    MELODIC_MINOR_DESCENDING = [
+        Interval.UNISON,
+        Interval.MAJOR_SECOND,
+        Interval.MINOR_THIRD,
+        Interval.PERFECT_FOURTH,
+        Interval.PERFECT_FIFTH,
+        Interval.MINOR_SIXTH,
+        Interval.MINOR_SEVENTH,
+    ]
+
 
 class Scale:
     def __init__(self, root_note: Note, scale_type: ScaleType):
