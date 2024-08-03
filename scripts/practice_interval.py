@@ -10,9 +10,9 @@ def generate_output():
         # finger = random.choice([1, 2, 4])
         string = random.randint(2, 5)
         fret = random.randint(3, 12)
-        number1 = random.randint(1, 7)
+        number1 = random.choice(["1", "b2", "2", "b3", "3", "4", "b5", "5", "b6", "6", "b7", "7"])
         direction = random.choice(['up', 'down'])
-        number2 = random.randint(1, 7)
+        number2 = random.choice(["1", "b2", "2", "b3", "3", "4", "b5", "5", "b6", "6", "b7", "7"])
         if number1 != number2:
             break
     print(f"{number1} {direction} {number2}")
