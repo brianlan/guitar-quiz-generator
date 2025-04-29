@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Music Interval Guitar Practice</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        #fretboard {
+            display: grid;
+            grid-template-columns: repeat(12, 40px);
+            grid-template-rows: repeat(6, 40px);
+            gap: 2px;
+            justify-content: center;
+            margin: 20px auto;
+        }
+        .cell {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #ccc;
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .yellow { background-color: yellow; }
+        .green { background-color: lightgreen; }
+        .modes button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+        #status {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+        #debugging {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Guitar Interval Practice</h1>
+    <div class="modes">
+        <button onclick="setMode('A')">Mode A</button>
+        <button onclick="setMode('B')">Mode B</button>
+        <button onclick="setMode('C')">Mode C</button>
+    </div>
+    <div id="fretboard"></div>
+    <div id="status">Press a key to answer!</div>
+    <div id="debugging" style="display: none;">Debugging Info</div>
+
+    <script>
+        const base_notes = [64, 59, 55, 50, 45, 40]; // row 0 (string 1) to row 5 (string 6)
+        const INTERVAL_MAP = {
+            0: '1',
+            1: 'b2',
+            2: '2',
+            3: 'b3',
+            4: '3',
+            5: '4',
+            6: 'b5',
+            7: '5',
+            8: 'b6',
+            9: '6',
+            10: 'b7',
+            11: '7'
+        };
+        const note_to_semitone = {
+            '1': 0,
+            'b2': 1,
+            '2': 2,
+            'b3': 3,
+            '3': 4,
+            '4': 5,
+            'b5': 6,
+            '5': 7,
+            'b6': 8,
+            '6': 9,
+            'b7': 10,
+            '7': 11
+        };
+        const semitone_to_note = [
+            '1', 'b2', '2', 'b3', '3', '4', 'b5', '5', 'b6', '6', 'b7', '7'
+        ];
+        const key_map = {
+            '1': '1',
+            '2': '2',
+            '3': '3',
+            '4': '4',
+            '5': '5',
+            '6': '6',
+            '7': '7',
+            'q': 'b2',
+            'w': 'b3',
+            'r': 'b5',
+            't': 'b6',
+            'y': 'b7'
+        };
+
+        let mode = 'A';
+        let currentYellow = null;
+        let currentGreen = null;
+        let currentIntervalName = '';
+        let currentIntervalSemitones = 0;
+        let yellowNoteStr = '';
+        let correctAnswer = '';
+        let correctAnswerSemi = 0;
+        let stats = { correct: 0, wrong: 0 };
+
+        function setMode(m) {
+            mode = m;
+            document.getElementById('status').textContent = `Mode ${mode} selected. Press any key to answer.`;
+            generateNewQuestion();
+        }
+
+        function generatePositions() {
+            let y_row = Math.floor(Math.random() * 6);
+            let y_fret = Math.floor(Math.random() * 12);
+            let g_row, g_fret;
+            let attempts = 0;
+            do {
+                g_row = Math.floor(Math.random() * 6);
+                g_fret = Math.floor(Math.random() * 12);
+                attempts++;
+            } while (
+                (Math.abs(g_fret - y_fret) > 5 || 
+                (g_row === y_row && g_fret === y_fret)) && 
+                attempts < 100
+            );
+            return {
+                yellow: { row: y_row, fret: y_fret },
+                green: { row: g_row, fret: g_fret }
+            };
+        }
+
+        function calculateInterval(yellow, green) {
+            const y_semitone = base_notes[yellow.row] + yellow.fret;
+            const g_semitone = base_notes[green.row] + green.fret;
+            const lower = Math.min(y_semitone, g_semitone);
+            const upper = Math.max(y_semitone, g_semitone);
+            const diff = upper - lower;
+            const adjusted_diff = diff % 12;
+            const interval_name = INTERVAL_MAP[adjusted_diff];
+            return {
+                interval_name,
+                semitone_diff: adjusted_diff,
+                yellow_lower: y_semitone <= g_semitone
+            };
+        }
+
+        function generateNewQuestion() {
+            const positions = generatePositions();
+            currentYellow = positions.yellow;
+            currentGreen = positions.green;
+            // currentYellow = {row: 5, fret: 1};
+            // currentGreen = {row: 1, fret: 6};
+            const intervalInfo = calculateInterval(currentYellow, currentGreen);
+            currentIntervalName = intervalInfo.interval_name;
+            currentIntervalSemitones = intervalInfo.semitone_diff;
+
+            // Determine yellow note text
+            if (mode === 'A') {
+                correctAnswerSemi = currentIntervalSemitones;
+            } else if (mode === 'B') {
+                const notes = Object.keys(note_to_semitone);
+                yellowNoteStr = notes[Math.floor(Math.random() * notes.length)];
+                const yellowSemi = note_to_semitone[yellowNoteStr];
+                const greenSemi = (yellowSemi + currentIntervalSemitones) % 12;
+                correctAnswerSemi = greenSemi;
+            } else {
+                yellowNoteStr = "1";
+                const yellowSemi = note_to_semitone[yellowNoteStr];
+                const greenSemi = (yellowSemi + currentIntervalSemitones) % 12;
+                correctAnswerSemi = greenSemi;
+            }
+
+            if (isYellowLower(currentYellow, currentGreen) || mode === 'A') {
+                correctAnswer = semitone_to_note[correctAnswerSemi];
+            } else {
+                correctAnswer = semitone_to_note[(12 - correctAnswerSemi) % 12];
+            }
+
+            renderFretboard();
+            document.getElementById('status').textContent = `Mode ${mode}: Answer expected. Stats: Correct ${stats.correct}, Wrong ${stats.wrong}`;
+            document.getElementById('debugging').textContent = `correctAnswerSemi: ${correctAnswerSemi}; correctAnswer: ${correctAnswer}; currentIntervalSemitones: ${currentIntervalSemitones}`;
+        }
+
+        function isYellowLower(yellow, green) {
+            const y_semitone = base_notes[yellow.row] + yellow.fret;
+            const g_semitone = base_notes[green.row] + green.fret;
+            return y_semitone <= g_semitone;
+        }
+
+        function renderFretboard() {
+            const board = document.getElementById('fretboard');
+            board.innerHTML = '';
+            for (let row = 0; row < 6; row++) {
+                for (let col = 0; col < 12; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    if (currentYellow.row === row && currentYellow.fret === col) {
+                        cell.classList.add('yellow');
+                    }
+                    if (currentGreen.row === row && currentGreen.fret === col) {
+                        cell.classList.add('green');
+                    }
+                    board.appendChild(cell);
+                }
+            }
+            if (mode === 'B' || mode === 'C') {
+                document.querySelector('.yellow').innerHTML = yellowNoteStr;
+            }
+        }
+
+        function handleKeyPress(e) {
+            const key = e.key;
+            const answer = key_map[key];
+            if (!answer) return;
+
+            if (!correctAnswer) return; // No active question
+
+            if (answer === correctAnswer) {
+                stats.correct++;
+                document.getElementById('status').textContent = `Correct! Next question...`;
+            } else {
+                stats.wrong++;
+                document.getElementById('status').textContent = `Wrong! Correct was: ${correctAnswer}. Next question...`;
+            }
+
+            setTimeout(generateNewQuestion, 1000);
+        }
+
+        document.addEventListener('keydown', handleKeyPress);
+
+        // Initialize
+        generateNewQuestion();
+    </script>
+</body>
+</html>
