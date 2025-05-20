@@ -11,30 +11,63 @@
         }
         #fretboard {
             display: grid;
-            grid-template-columns: repeat(12, 40px);
+            grid-template-columns: 51px 49px 47px 45px 43px 41px 39px 37px 35px 33px 31px 29px;
             grid-template-rows: repeat(6, 40px);
-            gap: 2px;
+            gap: 0;
             justify-content: center;
             margin: 20px auto;
+            background-color: #8B4513; /* Brown for wooden fretboard */
+            background-image: repeating-linear-gradient(to bottom, transparent 0px, transparent 19px, #C0C0C0 19px, #C0C0C0 21px, transparent 21px, transparent 40px); /* Strings */
+            width: 480px;
+            height: 240px;
         }
         .cell {
-            width: 40px;
+            width: 100%;
             height: 40px;
-            border: 1px solid #ccc;
-            background-color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
+            position: relative;
+            background-color: transparent;
+            border-right: 2px solid #453421; /* Fret lines */
+            box-sizing: border-box;
         }
-        .yellow { background-color: yellow; }
-        .green { background-color: lightgreen; }
+        .cell:nth-child(12n) {
+            border-right: none; /* No border on last cell in each row */
+        }
+        .cell:nth-child(12n + 1) {
+            border-left: 4px solid #453421; /* Nut on first cell in each row */
+        }
+        .marker {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .yellow-marker {
+            background-color: yellow;
+        }
+        .green-marker {
+            background-color: lightgreen;
+        }
+        .note-text {
+            color: black;
+            font-size: 14px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+        }
         .modes button {
             margin: 10px;
             padding: 10px 20px;
             font-size: 16px;
         }
-        #status {
+        #status #mode_desc {
             margin-top: 20px;
             font-size: 18px;
         }
@@ -53,6 +86,8 @@
     </div>
     <div id="fretboard"></div>
     <div id="status">Press a key to answer!</div>
+    <div id="mode_desc"></div>
+    <div id="keyboard_shortcuts"></div>
     <div id="debugging" style="display: none;">Debugging Info</div>
 
     <script>
@@ -102,6 +137,11 @@
             't': 'b6',
             'y': 'b7'
         };
+        const mode_desc_map = {
+            'A': 'Type in the absolute interval between the yellow and green spots.',
+            'B': 'Type in the note of the green spot (given the yellow spot as the root note).',
+            'C': 'Type in the note of the green spot.'
+        };
 
         let mode = 'A';
         let currentYellow = null;
@@ -110,7 +150,6 @@
         let currentIntervalSemitones = 0;
         let yellowNoteStr = '';
         let correctAnswer = '';
-        let correctAnswerSemi = 0;
         let stats = { correct: 0, wrong: 0 };
 
         function setMode(m) {
@@ -129,7 +168,7 @@
                 g_fret = Math.floor(Math.random() * 12);
                 attempts++;
             } while (
-                (Math.abs(g_fret - y_fret) > 5 || 
+                (Math.abs(g_fret - y_fret) > 4 || 
                 (g_row === y_row && g_fret === y_fret)) && 
                 attempts < 100
             );
@@ -158,13 +197,10 @@
             const positions = generatePositions();
             currentYellow = positions.yellow;
             currentGreen = positions.green;
-            // currentYellow = {row: 5, fret: 1};
-            // currentGreen = {row: 1, fret: 6};
             const intervalInfo = calculateInterval(currentYellow, currentGreen);
             currentIntervalName = intervalInfo.interval_name;
             currentIntervalSemitones = intervalInfo.semitone_diff;
 
-            // Determine yellow note text
             if (mode === 'A') {
                 correctAnswer = semitone_to_note[currentIntervalSemitones];
             } else {
@@ -176,26 +212,20 @@
                 }
 
                 const yellowSemi = note_to_semitone[yellowNoteStr];
-                let greenSemi = '';
-                    
-                if (isYellowLower(currentYellow, currentGreen)) {
+                let greenSemi;
+                if (intervalInfo.yellow_lower) {
                     greenSemi = (yellowSemi + currentIntervalSemitones) % 12;   
                 } else {
                     greenSemi = (yellowSemi - currentIntervalSemitones + 12) % 12;
                 }
-
                 correctAnswer = semitone_to_note[greenSemi];
             } 
 
             renderFretboard();
-            document.getElementById('status').textContent = `Mode ${mode}: Answer expected. Stats: Correct ${stats.correct}, Wrong ${stats.wrong}`;
-            document.getElementById('debugging').textContent = `correctAnswerSemi: ${correctAnswerSemi}; correctAnswer: ${correctAnswer}; currentIntervalSemitones: ${currentIntervalSemitones}`;
-        }
-
-        function isYellowLower(yellow, green) {
-            const y_semitone = base_notes[yellow.row] + yellow.fret;
-            const g_semitone = base_notes[green.row] + green.fret;
-            return y_semitone <= g_semitone;
+            document.getElementById('mode_desc').textContent = `Mode ${mode}: ${mode_desc_map[mode]}.`;
+            document.getElementById('status').textContent = `Stats: Correct ${stats.correct}, Wrong ${stats.wrong}`;
+            document.getElementById('keyboard_shortcuts').textContent = `Keyboard shortcuts: Q→b2, W→b3, R→b5, T→b6, Y→b7`;
+            document.getElementById('debugging').textContent = `correctAnswer: ${correctAnswer}; currentIntervalSemitones: ${currentIntervalSemitones}`;
         }
 
         function renderFretboard() {
@@ -206,16 +236,22 @@
                     const cell = document.createElement('div');
                     cell.className = 'cell';
                     if (currentYellow.row === row && currentYellow.fret === col) {
-                        cell.classList.add('yellow');
-                    }
-                    if (currentGreen.row === row && currentGreen.fret === col) {
-                        cell.classList.add('green');
+                        const marker = document.createElement('div');
+                        marker.className = 'marker yellow-marker';
+                        cell.appendChild(marker);
+                        if (mode === 'B' || mode === 'C') {
+                            const text = document.createElement('span');
+                            text.className = 'note-text';
+                            text.textContent = yellowNoteStr;
+                            cell.appendChild(text);
+                        }
+                    } else if (currentGreen.row === row && currentGreen.fret === col) {
+                        const marker = document.createElement('div');
+                        marker.className = 'marker green-marker';
+                        cell.appendChild(marker);
                     }
                     board.appendChild(cell);
                 }
-            }
-            if (mode === 'B' || mode === 'C') {
-                document.querySelector('.yellow').innerHTML = yellowNoteStr;
             }
         }
 
@@ -228,10 +264,10 @@
 
             if (answer === correctAnswer) {
                 stats.correct++;
-                document.getElementById('status').textContent = `Correct! Next question...`;
+                document.getElementById('status').textContent = `✅ Correct! Next question...`;
             } else {
                 stats.wrong++;
-                document.getElementById('status').textContent = `Wrong! Correct was: ${correctAnswer}. Next question...`;
+                document.getElementById('status').textContent = `❌ Wrong! Correct was: ${correctAnswer}. Next question...`;
             }
 
             setTimeout(generateNewQuestion, 1000);
