@@ -166,25 +166,26 @@
 
             // Determine yellow note text
             if (mode === 'A') {
-                correctAnswerSemi = currentIntervalSemitones;
-            } else if (mode === 'B') {
-                const notes = Object.keys(note_to_semitone);
-                yellowNoteStr = notes[Math.floor(Math.random() * notes.length)];
-                const yellowSemi = note_to_semitone[yellowNoteStr];
-                const greenSemi = (yellowSemi + currentIntervalSemitones) % 12;
-                correctAnswerSemi = greenSemi;
+                correctAnswer = semitone_to_note[currentIntervalSemitones];
             } else {
-                yellowNoteStr = "1";
-                const yellowSemi = note_to_semitone[yellowNoteStr];
-                const greenSemi = (yellowSemi + currentIntervalSemitones) % 12;
-                correctAnswerSemi = greenSemi;
-            }
+                if (mode === 'B') {
+                    yellowNoteStr = "1";
+                } else {  // mode === 'C'
+                    const notes = Object.keys(note_to_semitone);
+                    yellowNoteStr = notes[Math.floor(Math.random() * notes.length)];
+                }
 
-            if (isYellowLower(currentYellow, currentGreen) || mode === 'A') {
-                correctAnswer = semitone_to_note[correctAnswerSemi];
-            } else {
-                correctAnswer = semitone_to_note[(12 - correctAnswerSemi) % 12];
-            }
+                const yellowSemi = note_to_semitone[yellowNoteStr];
+                let greenSemi = '';
+                    
+                if (isYellowLower(currentYellow, currentGreen)) {
+                    greenSemi = (yellowSemi + currentIntervalSemitones) % 12;   
+                } else {
+                    greenSemi = (yellowSemi - currentIntervalSemitones + 12) % 12;
+                }
+
+                correctAnswer = semitone_to_note[greenSemi];
+            } 
 
             renderFretboard();
             document.getElementById('status').textContent = `Mode ${mode}: Answer expected. Stats: Correct ${stats.correct}, Wrong ${stats.wrong}`;
