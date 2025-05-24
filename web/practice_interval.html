@@ -9,17 +9,31 @@
             text-align: center;
             padding: 20px;
         }
+        #practice-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px auto;
+        }
         #fretboard {
             display: grid;
             grid-template-columns: 51px 49px 47px 45px 43px 41px 39px 37px 35px 33px 31px 29px;
             grid-template-rows: repeat(6, 40px);
             gap: 0;
-            justify-content: center;
-            margin: 20px auto;
             background-color: #8B4513; /* Brown for wooden fretboard */
             background-image: repeating-linear-gradient(to bottom, transparent 0px, transparent 19px, #C0C0C0 19px, #C0C0C0 21px, transparent 21px, transparent 40px); /* Strings */
             width: 480px;
             height: 240px;
+        }
+        #answer-buttons {
+            display: flex;
+            flex-direction: column;
+            margin-left: 20px;
+        }
+        #answer-buttons button {
+            margin: 5px;
+            padding: 5px 10px;
+            font-size: 14px;
         }
         .cell {
             width: 100%;
@@ -67,7 +81,7 @@
             padding: 10px 20px;
             font-size: 16px;
         }
-        #status #mode_desc {
+        #status, #mode_desc {
             margin-top: 20px;
             font-size: 18px;
         }
@@ -84,7 +98,10 @@
         <button onclick="setMode('B')">Mode B</button>
         <button onclick="setMode('C')">Mode C</button>
     </div>
-    <div id="fretboard"></div>
+    <div id="practice-area">
+        <div id="fretboard"></div>
+        <div id="answer-buttons"></div>
+    </div>
     <div id="status">Press a key to answer!</div>
     <div id="mode_desc"></div>
     <div id="keyboard_shortcuts"></div>
@@ -255,13 +272,11 @@
             }
         }
 
-        function handleKeyPress(e) {
-            const key = e.key;
-            const answer = key_map[key];
-            if (!answer) return;
-
-            if (!correctAnswer) return; // No active question
-
+        function checkAnswer(answer) {
+            if (!correctAnswer) {
+                console.log("No active question.");
+                return;
+            }
             if (answer === correctAnswer) {
                 stats.correct++;
                 document.getElementById('status').textContent = `✅ Correct! Next question...`;
@@ -269,14 +284,33 @@
                 stats.wrong++;
                 document.getElementById('status').textContent = `❌ Wrong! Correct was: ${correctAnswer}. Next question...`;
             }
-
             setTimeout(generateNewQuestion, 1000);
         }
 
-        document.addEventListener('keydown', handleKeyPress);
+        function handleKeyPress(e) {
+            const key = e.key;
+            const answer = key_map[key];
+            if (answer) {
+                checkAnswer(answer);
+            }
+        }
+
+        function createAnswerButtons() {
+            const answerButtonsDiv = document.getElementById('answer-buttons');
+            semitone_to_note.forEach(interval => {
+                const button = document.createElement('button');
+                button.textContent = interval;
+                button.addEventListener('click', () => {
+                    checkAnswer(interval);
+                });
+                answerButtonsDiv.appendChild(button);
+            });
+        }
 
         // Initialize
+        createAnswerButtons();
         generateNewQuestion();
+        document.addEventListener('keydown', handleKeyPress);
     </script>
 </body>
 </html>
