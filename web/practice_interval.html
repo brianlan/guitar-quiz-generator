@@ -26,14 +26,15 @@
             height: 240px;
         }
         #answer-buttons {
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* Two columns */
+            gap: 10px; /* Space between buttons */
             margin-left: 20px;
         }
         #answer-buttons button {
-            margin: 5px;
-            padding: 5px 10px;
-            font-size: 14px;
+            padding: 10px 20px; /* Increase padding for wider buttons */
+            font-size: 16px; /* Slightly larger font size */
+            width: 100%; /* Make buttons take full width of the grid cell */
         }
         .cell {
             width: 100%;
