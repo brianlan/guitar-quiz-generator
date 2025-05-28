@@ -220,24 +220,31 @@
             currentIntervalSemitones = intervalInfo.semitone_diff;
 
             if (mode === 'A') {
+                yellowNoteStr = '';
                 correctAnswer = semitone_to_note[currentIntervalSemitones];
-            } else {
-                if (mode === 'B') {
-                    yellowNoteStr = "1";
-                } else {  // mode === 'C'
-                    const notes = Object.keys(note_to_semitone);
-                    yellowNoteStr = notes[Math.floor(Math.random() * notes.length)];
-                }
-
+            } else if (mode === 'B') {
+                yellowNoteStr = "1";
                 const yellowSemi = note_to_semitone[yellowNoteStr];
                 let greenSemi;
                 if (intervalInfo.yellow_lower) {
-                    greenSemi = (yellowSemi + currentIntervalSemitones) % 12;   
+                    greenSemi = (yellowSemi + currentIntervalSemitones) % 12;
                 } else {
                     greenSemi = (yellowSemi - currentIntervalSemitones + 12) % 12;
                 }
                 correctAnswer = semitone_to_note[greenSemi];
-            } 
+            } else if (mode === 'C') {
+                // Always pick a new random note for yellowNoteStr in Mode C
+                const notes = Object.keys(note_to_semitone);
+                yellowNoteStr = notes[Math.floor(Math.random() * notes.length)];
+                const yellowSemi = note_to_semitone[yellowNoteStr];
+                let greenSemi;
+                if (intervalInfo.yellow_lower) {
+                    greenSemi = (yellowSemi + currentIntervalSemitones) % 12;
+                } else {
+                    greenSemi = (yellowSemi - currentIntervalSemitones + 12) % 12;
+                }
+                correctAnswer = semitone_to_note[greenSemi];
+            }
 
             renderFretboard();
             document.getElementById('mode_desc').textContent = `Mode ${mode}: ${mode_desc_map[mode]}.`;
