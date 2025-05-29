@@ -160,5 +160,6 @@ cython_debug/
 #.idea/
 
 output
+assets/guitar_sound_samples_original
 .vscode
 .DS_Store

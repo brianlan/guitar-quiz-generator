@@ -107,10 +107,31 @@
     <div id="mode_desc"></div>
     <div id="keyboard_shortcuts"></div>
     <button id="review-btn" style="margin-top:20px;">Review</button>
+
+    <button id="soundtest-btn" style="margin-top:20px;">Sound Test</button>
+
     <div id="stats" style="margin-top:20px;"></div>
     <div id="debugging" style="display: none;">Debugging Info</div>
 
     <script>
+        // --- Sound Test Mode ---
+        function playFretboardTest() {
+            const notes = [];
+            // From lowest (string 6, fret 0) to highest (string 1, fret 11)
+            for (let row = 5; row >= 0; row--) { // string 6 to 1
+                for (let fret = 0; fret < 12; fret++) {
+                    notes.push(base_notes[row] + fret);
+                }
+            }
+            let idx = 0;
+            function playNext() {
+                if (idx >= notes.length) return;
+                playNote(notes[idx], 0.45);
+                idx++;
+                setTimeout(playNext, 500);
+            }
+            playNext();
+        }
         const base_notes = [64, 59, 55, 50, 45, 40]; // row 0 (string 1) to row 5 (string 6)
         const INTERVAL_MAP = {
             0: '1',
@@ -176,8 +197,63 @@
         let reviewMode = false;
         let reviewQueue = [];
 
-        // --- Audio Playback ---
+        // --- Audio Sample Playback ---
+        // Map note names to MIDI numbers for E standard tuning
+        const NOTE_TO_MIDI = {
+            'C': 0, 'C#': 1, 'D': 2, 'D#': 3, 'E': 4, 'F': 5, 'F#': 6, 'G': 7, 'G#': 8, 'A': 9, 'A#': 10, 'B': 11
+        };
+
+        // Build a lookup: midi number -> { filename, Audio }
+        const midiToSample = {};
+        const sampleFiles = [
+            "01-e-2.ogg","02-f-2.ogg","03-f-sharp-2.ogg","04-g-2.ogg","05-g-sharp-2.ogg","06-a-2.ogg","07-a-sharp-2.ogg","08-b-2.ogg","09-c-3.ogg","10-c-sharp-3.ogg","11-d-3.ogg","12-d-sharp-3.ogg","13-e-3.ogg","14-f-3.ogg","15-f-sharp-3.ogg","16-g-3.ogg","17-g-sharp-3.ogg","18-a-3.ogg","19-a-sharp-3.ogg","20-b-3.ogg","21-c-4.ogg","22-c-sharp-4.ogg","23-d-4.ogg","24-d-sharp-4.ogg","25-e-4.ogg","26-f-4.ogg","27-f-sharp-4.ogg","28-g-4.ogg","29-g-sharp-4.ogg","30-a-4.ogg","31-a-sharp-4.ogg","32-b-4.ogg","33-c-5.ogg","34-c-sharp-5.ogg","35-d-5.ogg","36-d-sharp-5.ogg","37-e-5.ogg","38-f-5.ogg","39-f-sharp-5.ogg","40-g-5.ogg","41-g-sharp-5.ogg","42-a-5.ogg","43-a-sharp-5.ogg","44-b-5.ogg","45-c-6.ogg"
+        ];
+
+        function parseSampleFilename(filename) {
+            // Match pattern: nn-note(-sharp)?-octave.ogg, e.g., 03-f-sharp-2.ogg, 09-c-3.ogg
+            const match = filename.match(/\d+-([a-g]+)(-sharp)?-(\d)\.ogg$/i);
+            if (!match) return null;
+            let note = match[1].toUpperCase();
+            if (match[2]) note += '#';
+            const octave = parseInt(match[3], 10);
+            return { note, octave };
+        }
+
+        function loadGuitarSamples() {
+            sampleFiles.forEach(filename => {
+                const parsed = parseSampleFilename(filename);
+                if (!parsed) return;
+                const midi = NOTE_TO_MIDI[parsed.note] + 12 * (parsed.octave + 1);
+                midiToSample[midi] = {
+                    filename,
+                    audio: new Audio(`../assets/guitar_sound_samples/${filename}`)
+                };
+            });
+        }
+
+        function getClosestSample(midi) {
+            let closestMidi = null;
+            let minDist = 128;
+            for (const m in midiToSample) {
+                const dist = Math.abs(midi - m);
+                if (dist < minDist) {
+                    minDist = dist;
+                    closestMidi = m;
+                }
+            }
+            return closestMidi ? midiToSample[closestMidi] : null;
+        }
+
         function playNote(midi, duration = 0.5) {
+            const sampleObj = getClosestSample(midi);
+            if (sampleObj) {
+                const audio = sampleObj.audio;
+                audio.currentTime = 0;
+                audio.play();
+                setTimeout(() => audio.pause(), duration * 1000);
+                return;
+            }
+            // fallback: original synth
             const ctx = window.audioCtx || (window.audioCtx = new (window.AudioContext || window.webkitAudioContext)());
             const now = ctx.currentTime;
             const osc = ctx.createOscillator();
@@ -192,6 +268,9 @@
             gain.gain.setValueAtTime(0.15, now);
             gain.gain.linearRampToValueAtTime(0, now + duration);
         }
+
+        // Load samples on page load
+        loadGuitarSamples();
 
         function setMode(m) {
             mode = m;
@@ -436,6 +515,7 @@
         updateStatsDisplay();
         generateNewQuestion();
         document.addEventListener('keydown', handleKeyPress);
+        document.getElementById('soundtest-btn').onclick = playFretboardTest;
     </script>
 </body>
 </html>
